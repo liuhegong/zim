@@ -1,0 +1,27 @@
+syntax = "proto3";
+package com.asm.zim.common.proto;
+message MessageFile {
+    string id = 1;
+    string messageId = 2;
+    string fileName =3;
+    int64 size = 4;
+    string suffix = 5;
+    string url = 6;
+    int64 createTime = 7;
+}
+message Message {
+    string id = 1;
+    int32 code = 2;//系统消息生效 系统功能码
+    string fromId = 3;
+    string toId = 4;
+    string content = 5;
+    int64 sendTime = 6;
+    int32 messageType = 7; //1：系统消息  2：普通消息
+    int32 messageCategory = 8;//消息类别 1 普通文本 2 文件
+    int32 chatType = 9; //聊天类型 1.群聊 2.私聊 3.消息推送
+    int32 terminalType = 10; //终端类型
+    string protocol = 11;//协议
+    string token =12;
+    string data=13;//其他属性
+    MessageFile messageFile=14;
+}

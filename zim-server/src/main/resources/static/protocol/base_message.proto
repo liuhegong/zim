@@ -1,0 +1,20 @@
+syntax = "proto3";
+package protocol;
+message BufFile{
+    string name = 1;
+    uint32 size = 2;
+    bytes data = 3;
+}
+message Message {
+    string fromId = 1;
+    string toId = 2;
+    string content = 3;
+    int64 sendTime = 4;
+    int32 messageType = 5; //1：系统消息  2：普通消息 3.游戏链接
+    int32 chatType = 6; //聊天类型 1.群聊 2.私聊 3.消息推送
+    int32 terminalType = 7; //终端类型
+    repeated BufFile files = 8;//文件
+    string protocol = 9;//协议
+    string token =10;
+    string data=11;//其他属性
+}

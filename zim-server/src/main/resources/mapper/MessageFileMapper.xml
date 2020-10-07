@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.asm.zim.server.dao.MessageFileDao">
+    <sql id="baseMessageFileSql">
+        ${prefix}id as ${alias}id
+        ,
+        ${prefix}message_id as ${alias}message_id
+        ,
+        ${prefix}file_name as ${alias}file_name
+        ,
+        ${prefix}size as ${alias}size
+        ,
+        ${prefix}url as ${alias}url
+        ,
+        ${prefix}create_time as ${alias}create_time
+        ,
+        ${prefix}suffix as ${alias}suffix
+    </sql>
+    <resultMap id="messageFileMapper" type="com.asm.zim.server.entry.MessageFile">
+        <id column="id" property="id"/>
+        <result column="message_id" property="messageId"/>
+        <result column="file_name" property="fileName"/>
+        <result column="size" property="size"/>
+        <result column="url" property="url"/>
+        <result column="create_time" property="createTime"/>
+        <result column="suffix" property="suffix"/>
+    </resultMap>
+</mapper>

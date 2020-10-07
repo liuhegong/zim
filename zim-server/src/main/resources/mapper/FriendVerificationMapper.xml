@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.asm.zim.server.dao.FriendVerificationDao">
+    <sql id="baseFriendVerificationSql">
+        ${prefix}id as ${alias}id
+        ,
+        ${prefix}from_id as ${alias}from_id
+        ,
+        ${prefix}to_id as ${alias}to_id
+        ,
+        ${prefix}content as ${alias}content
+        ,
+        ${prefix}group_id as ${alias}group_id
+        ,
+        ${prefix}remark_name as ${alias}remark_name
+        ,
+        ${prefix}read_state as ${alias}read_state
+        ,
+        ${prefix}agree_state as ${alias}agree_state
+        ,
+        ${prefix}send_time as ${alias}send_time
+        ,
+        ${prefix}person_id as ${alias}person_id
+        ,
+        ${prefix}bind_id as ${alias}bind_id
+    </sql>
+    <resultMap id="friendVerificationMap" type="com.asm.zim.server.entry.FriendVerification">
+        <id property="id" column="id"/>
+        <result column="from_id" property="fromId"/>
+        <result column="to_id" property="toId"/>
+        <result column="content" property="content"/>
+        <result column="group_id" property="groupId"/>
+        <result column="remark_name" property="remarkName"/>
+        <result column="read_state" property="readState"/>
+        <result column="agree_state" property="agreeState"/>
+        <result column="send_time" property="sendTime"/>
+        <result column="person_id" property="personId"/>
+        <result column="bind_id" property="bindId"/>
+        <association property="fromPerson" resultMap="com.asm.zim.server.dao.PersonDao.personMapper"
+                     columnPrefix="person_from_"/>
+        <association property="toPerson" resultMap="com.asm.zim.server.dao.PersonDao.personMapper"
+                     columnPrefix="person_to_"/>
+    </resultMap>
+    <select id="load" resultMap="friendVerificationMap">
+        select
+        <include refid="baseFriendVerificationSql">
+            <property name="prefix" value="friend_verification."/>
+            <property name="alias" value=""/>
+        </include>
+        ,
+        <include refid="com.asm.zim.server.dao.PersonDao.basePersonSql">
+            <property name="prefix" value="person_from."/>
+            <property name="alias" value="person_from_"/>
+        </include>
+        ,
+        <include refid="com.asm.zim.server.dao.PersonDao.basePersonSql">
+            <property name="prefix" value="person_to."/>
+            <property name="alias" value="person_to_"/>
+        </include>
+        from friend_verification
+        left join person person_from on person_from.id = friend_verification.from_id
+        left join person person_to on person_to.id = friend_verification.to_id
+        <where>
+            <if test="map.personId!=null">
+                friend_verification.person_id = #{map.personId}
+            </if>
+            <if test="map.fromId!=null">
+                and friend_verification.from_id = #{map.fromId}
+            </if>
+            <if test="map.toId!=null">
+                and friend_verification.to_id = #{map.toId}
+            </if>
+            <if test="map.bindId!=null">
+                and friend_verification.bind_id = #{map.bindId}
+            </if>
+        </where>
+        order by friend_verification.send_time desc,friend_verification.read_state desc
+    </select>
+</mapper>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.asm.zim.server.dao.FriendDao">
+    <sql id="baseFriendSql">
+        ${prefix}id as ${alias}id
+        ,
+        ${prefix}friend_group_id as ${alias}friend_group_id
+        ,
+        ${prefix}person_id as ${alias}person_id
+        ,
+        ${prefix}friend_id as ${alias}friend_id
+        ,
+        ${prefix}remark_name as ${alias}remark_name
+    </sql>
+    <resultMap id="friendMapper" type="com.asm.zim.server.entry.Friend">
+        <id property="id" column="id"/>
+        <result column="person_id" property="personId"/>
+        <result column="friend_id" property="friendId"/>
+        <result column="friend_group_id" property="friendGroupId"/>
+        <result column="remark_name" property="remarkName"/>
+        <association property="person" resultMap="com.asm.zim.server.dao.PersonDao.personMapper" columnPrefix="p_"/>
+    </resultMap>
+    <select id="selectGroupFriend" resultMap="friendMapper">
+        select
+        <include refid="baseFriendSql">
+            <property name="prefix" value="friend."/>
+            <property name="alias" value=""/>
+        </include>
+        ,
+        <include refid="com.asm.zim.server.dao.PersonDao.basePersonSql">
+            <property name="prefix" value="person."/>
+            <property name="alias" value="p_"/>
+        </include>
+        from friend_group
+        right join friend on friend.friend_group_id = friend_group.id
+        left join person on person.id = friend.friend_id
+        <where>
+            friend_group.person_id = #{personId}
+            <if test="groupId!=null">
+                and friend_group.id = #{groupId}
+            </if>
+        </where>
+    </select>
+</mapper>

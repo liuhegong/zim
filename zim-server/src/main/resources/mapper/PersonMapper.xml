@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.asm.zim.server.dao.PersonDao">
+    <sql id="basePersonSql">
+        ${prefix}id as ${alias}id
+        ,
+        ${prefix}person_name as ${alias}person_name
+        ,
+        ${prefix}intro as ${alias}intro
+        ,
+        ${prefix}header as ${alias}header
+    </sql>
+    <resultMap id="personMapper" type="com.asm.zim.server.entry.Person">
+        <id property="id" column="id"/>
+        <result column="person_name" property="name"/>
+        <result column="intro" property="intro"/>
+        <result column="header" property="header"/>
+    </resultMap>
+
+</mapper>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.asm.zim.server.dao.MessageDao">
+    <sql id="baseMessageSql">
+        ${prefix}id  as ${alias}id,
+        ${prefix}person_id as ${alias}person_id,
+        ${prefix}from_id as ${alias}from_id,
+        ${prefix}to_id as ${alias}to_id,
+        ${prefix}content as ${alias}content,
+        ${prefix}send_time as ${alias}send_time,
+        ${prefix}message_type as ${alias}message_type,
+        ${prefix}message_category as ${alias}message_category,
+        ${prefix}chat_type as ${alias}chat_type,
+        ${prefix}terminal_type as ${alias}terminal_type,
+        ${prefix}protocol as ${alias}protocol,
+        ${prefix}order_number as ${alias}order_number,
+        ${prefix}read_state as ${alias}read_state
+    </sql>
+
+    <resultMap id="baseMessageMapper" type="com.asm.zim.server.entry.Message">
+    </resultMap>
+    <resultMap id="messageMapper" type="com.asm.zim.server.entry.Message">
+        <id column="id" property="id"/>
+        <result column="from_id" property="fromId"/>
+        <result column="to_id" property="toId"/>
+        <result column="person_id" property="personId"/>
+        <result column="content" property="content"/>
+        <result column="send_time" property="sendTime"/>
+        <result column="message_type" property="messageType"/>
+        <result column="message_category" property="messageCategory"/>
+        <result column="chat_type" property="chatType"/>
+        <result column="terminal_type" property="terminalType"/>
+        <result column="protocol" property="protocol"/>
+        <result column="order_number" property="orderNumber"/>
+        <result column="read_state" property="readState"/>
+        <collection property="messageFile" resultMap="com.asm.zim.server.dao.MessageFileDao.messageFileMapper"
+                    columnPrefix="message_file_"/>
+    </resultMap>
+    <select id="selectMessageList" resultMap="messageMapper">
+        select
+        <include refid="baseMessageSql">
+            <property name="prefix" value="message."/>
+            <property name="alias" value=""/>
+        </include>
+        ,
+        <include refid="com.asm.zim.server.dao.MessageFileDao.baseMessageFileSql">
+            <property name="prefix" value="message_file."/>
+            <property name="alias" value="message_file_"/>
+        </include>
+        from message
+        left join message_file on message_file.message_id = message.id
+        <where>
+            <if test="map.personId!=null and map.toId!=null and map.fromId!=null">
+                and message.person_id = #{map.personId}
+                and (message.from_id = #{map.toId}
+                or message.from_id = #{map.fromId}
+                )
+            </if>
+            <if test="map.messageType!=null">
+                and message.message_type =#{map.messageType}
+            </if>
+            <if test="map.messageCategory!=null">
+                and message.message_category =#{map.messageCategory}
+            </if>
+            <if test="map.chatType!=null">
+                and message.chat_type=#{map.chatType}
+            </if>
+            <if test="map.terminalType!=null">
+                and message.terminal_type=#{map.terminalType}
+            </if>
+            <if test="map.readState!=null">
+                and message.read_state=#{map.readState}
+            </if>
+        </where>
+        order by order_number desc
+    </select>
+
+
+    <update id="setHasRead">
+        update message set read_state = #{map.readState}
+        <where>
+            <if test="map.fromId!=null">
+                and from_id =#{map.fromId}
+            </if>
+            <if test="map.toId!=null">
+                and to_id =#{map.toId}
+            </if>
+            <if test="map.personId!=null">
+                and person_id =#{map.personId}
+            </if>
+        </where>
+    </update>
+</mapper>
