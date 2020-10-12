@@ -43,7 +43,7 @@ public class RouteMessageSend {
 		if (tokenAuth != null) {
 			Channel channel = sendMessageService.sendByToken(message);
 			if (channel == null) {
-				logger.info(" IP:{},port:{} 路由发送消息", tokenAuth.getIp(), tokenAuth.getPort());
+				logger.info(" IP:{} 路由发送消息", tokenAuth.getIp());
 			}
 		}
 	}

@@ -53,7 +53,7 @@ public class NettyRouteMessage implements RouteMessage {
 		BaseMessage.Message message = dataProtocolService.coverNetMessageToProtoMessage(netMessage);
 		if (Constants.EQUIPMENT_ID.equals(tokenAuth.getEquipmentId())) {
 			//本机处理
-			logger.info("IP:{},port:{} 消费了一条消息", tokenAuth.getIp(), tokenAuth.getPort());
+			logger.info("IP:{}消费了一条消息", tokenAuth.getIp());
 			changeMessageService.handleRead(message);
 			return;
 		}

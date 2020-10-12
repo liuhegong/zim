@@ -70,7 +70,6 @@ public class TokenServiceImpl implements TokenService {
 		TokenAuth tokenAuth = new TokenAuth();
 		tokenAuth.setIp(Constants.LOCALHOST);
 		tokenAuth.setPersonId(personId);
-		tokenAuth.setPort(websocketConfig.getPort());
 		tokenAuth.setToken(token);
 		tokenAuth.setEquipmentId(Constants.EQUIPMENT_ID);
 		tokenAuth.setLastLoginTime(System.currentTimeMillis());
@@ -219,7 +218,6 @@ public class TokenServiceImpl implements TokenService {
 		}
 		tokenAuth.setIp(Constants.LOCALHOST);
 		tokenAuth.setEquipmentId(Constants.EQUIPMENT_ID);
-		tokenAuth.setPort(websocketConfig.getPort());
 		redisTemplate.opsForValue().set(token, tokenAuth, imConfig.getSessionExpireTime(), TimeUnit.SECONDS);
 		redisTemplate.opsForValue().set(tokenAuth.getPersonId(), token, imConfig.getSessionExpireTime(), TimeUnit.SECONDS);
 	}

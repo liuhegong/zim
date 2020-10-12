@@ -12,7 +12,6 @@ import java.io.Serializable;
 public class TokenAuth implements Serializable, Cloneable {
 	private String personId;
 	private String ip;
-	private int port;
 	private String token;
 	private String equipmentId;
 	/**

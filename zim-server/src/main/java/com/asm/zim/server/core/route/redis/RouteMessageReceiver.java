@@ -43,10 +43,10 @@ public class RouteMessageReceiver {
 		BaseMessage.Message message = dataProtocolService.coverNetMessageToProtoMessage(netMessage);
 		TokenAuth tokenAuth = tokenService.getTokenAuthByPersonId(message.getToId());
 		if (Constants.EQUIPMENT_ID.equals(tokenAuth.getEquipmentId())) {
-			logger.info("当前机器 IP:{},port:{} 消费了一条消息", tokenAuth.getIp(), tokenAuth.getPort());
+			logger.info("当前机器 IP:{}消费了一条消息", tokenAuth.getIp());
 			changeMessageService.handleRead(message);
 		} else {
-			logger.info("IP:{},port:{} 忽略消息", tokenAuth.getIp(), tokenAuth.getPort());
+			logger.info("IP:{} 忽略消息", tokenAuth.getIp());
 		}
 	}
 }
