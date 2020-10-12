@@ -1,6 +1,7 @@
 package com.asm.zim.server.core.route.netty;
 
 import com.asm.zim.common.proto.BaseMessage;
+import com.asm.zim.server.config.yaml.TcpConfig;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -11,7 +12,7 @@ import io.netty.handler.codec.protobuf.ProtobufEncoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -24,9 +25,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class RouteClient {
 	private Logger logger = LoggerFactory.getLogger(RouteClient.class);
-	
-	@Value("${im.tcp.port}")
-	private String serverPort = "7777";
+	@Autowired
+	private TcpConfig tcpConfig;
 	/**
 	 * ip
 	 * channel
@@ -41,7 +41,7 @@ public class RouteClient {
 		Channel channel = channelMap.get(ip);
 		if (channel == null) {
 			logger.info("建立连接中...");
-			connect(ip, Integer.parseInt(serverPort));
+			connect(ip, tcpConfig.getPort());
 			channel = channelMap.get(ip);
 		}
 		return channel;

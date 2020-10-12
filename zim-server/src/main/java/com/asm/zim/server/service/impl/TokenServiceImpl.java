@@ -3,19 +3,18 @@ package com.asm.zim.server.service.impl;
 import cn.hutool.core.util.IdUtil;
 import com.asm.zim.common.entry.TokenAuth;
 import com.asm.zim.server.common.constants.Constants;
-import com.asm.zim.server.config.net.WebSocketArgsConfig;
+import com.asm.zim.server.config.yaml.ImConfig;
+import com.asm.zim.server.config.yaml.WebsocketConfig;
 import com.asm.zim.server.service.TokenService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.annotation.Resource;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -31,11 +30,10 @@ public class TokenServiceImpl implements TokenService {
 	private Logger logger = LoggerFactory.getLogger(TokenServiceImpl.class);
 	@Autowired
 	private RedisTemplate<String, Serializable> redisTemplate;
-	@Value("#{${im.token-encrypt}}")
-	public boolean tokenEncrypt = false;
-	
-	@Resource(name = "webSocketArgsConfig")
-	private WebSocketArgsConfig webSocketArgsConfig;
+	@Autowired
+	private ImConfig imConfig;
+	@Autowired
+	private WebsocketConfig websocketConfig;
 	
 	@Override
 	public void setCookie(String token) {
@@ -48,8 +46,8 @@ public class TokenServiceImpl implements TokenService {
 		if (tokenAuth != null) {
 			tokenAuth.setLastLoginTime(System.currentTimeMillis());
 			redisTemplate.opsForValue().set(token, tokenAuth);
-			redisTemplate.expire(token, Constants.SESSION_EXPIRE_TIME, TimeUnit.SECONDS);
-			redisTemplate.expire(tokenAuth.getPersonId(), Constants.SESSION_EXPIRE_TIME, TimeUnit.SECONDS);
+			redisTemplate.expire(token, imConfig.getSessionExpireTime(), TimeUnit.SECONDS);
+			redisTemplate.expire(tokenAuth.getPersonId(), imConfig.getSessionExpireTime(), TimeUnit.SECONDS);
 		}
 		logger.info("token {} 刷新", token);
 	}
@@ -59,7 +57,7 @@ public class TokenServiceImpl implements TokenService {
 			return;
 		}
 		Cookie cookie = new Cookie(Constants.SESSION_ID, token);
-		cookie.setMaxAge(Constants.SESSION_EXPIRE_TIME);
+		cookie.setMaxAge(imConfig.getSessionExpireTime());
 		response.addCookie(cookie);
 	}
 	
@@ -72,12 +70,12 @@ public class TokenServiceImpl implements TokenService {
 		TokenAuth tokenAuth = new TokenAuth();
 		tokenAuth.setIp(Constants.LOCALHOST);
 		tokenAuth.setPersonId(personId);
-		tokenAuth.setPort(webSocketArgsConfig.getPort());
+		tokenAuth.setPort(websocketConfig.getPort());
 		tokenAuth.setToken(token);
 		tokenAuth.setEquipmentId(Constants.EQUIPMENT_ID);
 		tokenAuth.setLastLoginTime(System.currentTimeMillis());
-		redisTemplate.opsForValue().set(token, tokenAuth, Constants.SESSION_EXPIRE_TIME, TimeUnit.SECONDS);
-		redisTemplate.opsForValue().set(personId, token, Constants.SESSION_EXPIRE_TIME, TimeUnit.SECONDS);
+		redisTemplate.opsForValue().set(token, tokenAuth, imConfig.getSessionExpireTime(), TimeUnit.SECONDS);
+		redisTemplate.opsForValue().set(personId, token, imConfig.getSessionExpireTime(), TimeUnit.SECONDS);
 		logger.info("创建token==>{}", token);
 		return token;
 	}
@@ -94,7 +92,7 @@ public class TokenServiceImpl implements TokenService {
 		}
 		long lastLoginTime = tokenAuth.getLastLoginTime();
 		long now = System.currentTimeMillis();
-		int interval = Constants.SESSION_EXPIRE_TIME * 1000 * 2 / 3;
+		int interval = imConfig.getSessionExpireTime() * 1000 * 2 / 3;
 		if (now - lastLoginTime > interval) {
 			refreshByToken(token);
 		}
@@ -221,9 +219,9 @@ public class TokenServiceImpl implements TokenService {
 		}
 		tokenAuth.setIp(Constants.LOCALHOST);
 		tokenAuth.setEquipmentId(Constants.EQUIPMENT_ID);
-		tokenAuth.setPort(webSocketArgsConfig.getPort());
-		redisTemplate.opsForValue().set(token, tokenAuth, Constants.SESSION_EXPIRE_TIME, TimeUnit.SECONDS);
-		redisTemplate.opsForValue().set(tokenAuth.getPersonId(), token, Constants.SESSION_EXPIRE_TIME, TimeUnit.SECONDS);
+		tokenAuth.setPort(websocketConfig.getPort());
+		redisTemplate.opsForValue().set(token, tokenAuth, imConfig.getSessionExpireTime(), TimeUnit.SECONDS);
+		redisTemplate.opsForValue().set(tokenAuth.getPersonId(), token, imConfig.getSessionExpireTime(), TimeUnit.SECONDS);
 	}
 	
 	@Override

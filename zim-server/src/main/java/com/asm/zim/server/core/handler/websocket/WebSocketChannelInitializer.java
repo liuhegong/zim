@@ -1,7 +1,7 @@
 package com.asm.zim.server.core.handler.websocket;
 
 import com.asm.zim.common.proto.BaseMessage;
-import com.asm.zim.server.config.net.WebSocketArgsConfig;
+import com.asm.zim.server.config.yaml.WebsocketConfig;
 import com.asm.zim.server.core.codec.WebSocketMessageDecoder;
 import com.asm.zim.server.core.handler.DistributeHandler;
 import com.asm.zim.server.core.handler.LoginHandler;
@@ -19,6 +19,7 @@ import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -37,19 +38,19 @@ public class WebSocketChannelInitializer extends ChannelInitializer<SocketChanne
 	private DistributeHandler distributeHandler;
 	@Resource(name = "webSocketHandler")
 	private WebSocketHandler webSocketHandler;
-	@Resource(name = "webSocketArgsConfig")
-	private WebSocketArgsConfig webSocketArgsConfig;
+	@Autowired
+	private WebsocketConfig websocketConfig;
 	
 	@Override
 	protected void initChannel(SocketChannel socketChannel) throws Exception {
 		logger.info("webSocketChannel init Channel");
 		ChannelPipeline pipeline = socketChannel.pipeline();
 		pipeline.addLast(new HttpServerCodec());
-		pipeline.addLast(new HttpObjectAggregator(webSocketArgsConfig.getHttpMaxLength()));
+		pipeline.addLast(new HttpObjectAggregator(websocketConfig.getHttpMaxLength()));
 		pipeline.addLast(new ChunkedWriteHandler());
-		pipeline.addLast(new WebSocketFrameAggregator(webSocketArgsConfig.getMaxFrameAggregator()));
+		pipeline.addLast(new WebSocketFrameAggregator(websocketConfig.getMaxFrameAggregator()));
 		pipeline.addLast(new WebSocketServerCompressionHandler());
-		pipeline.addLast(new WebSocketServerProtocolHandler("/", null, true, webSocketArgsConfig.getFrameMaxLength()));
+		pipeline.addLast(new WebSocketServerProtocolHandler("/", null, true, websocketConfig.getFrameMaxLength()));
 		pipeline.addLast(new WebSocketMessageDecoder());
 		pipeline.addLast(new ProtobufDecoder(BaseMessage.Message.getDefaultInstance()));
 		pipeline.addLast(new ProtobufEncoder());

@@ -1,6 +1,6 @@
 package com.asm.zim.server.core.server;
 
-import com.asm.zim.server.config.net.WebSocketArgsConfig;
+import com.asm.zim.server.config.yaml.WebsocketConfig;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -8,7 +8,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -29,20 +29,18 @@ public class WebSocketServer {
 	@Resource(name = "webSocketServerBootstrap")
 	private ServerBootstrap bootstrap;
 	private int port;
-	@Resource(name = "webSocketArgsConfig")
-	private WebSocketArgsConfig webSocketArgsConfig;
+	@Autowired
+	private WebsocketConfig websocketConfig;
 	private ChannelFuture cf = null;
-	@Value("${im.websocket.start}")
-	private String hasStart = "false";
 	
 	@PostConstruct
 	public void start() {
-		if (!Boolean.parseBoolean(hasStart)) {
+		if (!websocketConfig.isStart()) {
 			return;
 		}
 		new Thread(() -> {
 			try {
-				port = webSocketArgsConfig.getPort();
+				port = websocketConfig.getPort();
 				cf = bootstrap.bind(port).sync();
 				cf.addListener((ChannelFutureListener) future -> {
 					if (cf.isSuccess()) {
@@ -67,7 +65,7 @@ public class WebSocketServer {
 	public void destroy() {
 		bossGroup.shutdownGracefully();
 		workerGroup.shutdownGracefully();
-		if (Boolean.parseBoolean(hasStart)) {
+		if (websocketConfig.isStart()) {
 			logger.info("webSocket 端口 {} 关闭", port);
 		}
 	}

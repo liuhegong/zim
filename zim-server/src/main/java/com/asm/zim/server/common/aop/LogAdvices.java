@@ -3,6 +3,7 @@ package com.asm.zim.server.common.aop;
 import cn.hutool.core.util.IdUtil;
 import com.asm.zim.server.annotation.MyLog;
 import com.asm.zim.server.common.constants.Constants;
+import com.asm.zim.server.config.yaml.WebsocketConfig;
 import com.asm.zim.server.controller.LoginController;
 import com.asm.zim.server.dao.LogDao;
 import com.asm.zim.server.entry.Log;
@@ -19,7 +20,6 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
@@ -33,7 +33,6 @@ import java.util.Arrays;
 
 @Component
 @Aspect
-@ConfigurationProperties(prefix = "im.aop")
 public class LogAdvices {
 	private Logger logger = LoggerFactory.getLogger(LogAdvices.class);
 	@Setter
@@ -43,13 +42,15 @@ public class LogAdvices {
 	private LogDao logDao;
 	@Autowired
 	private TokenService tokenService;
-	
+	@Autowired
+	private WebsocketConfig websocketConfig;
 	@Pointcut("execution(* com.asm.zim.server.controller..*(..))")
 	public void pointcut() {
 	}
 	
 	@Before("@annotation(com.asm.zim.server.annotation.MyLog)")
 	public void before(JoinPoint jp) {
+		// TODO: 2020/ 9/25 支持tcp
 		MethodSignature signature = (MethodSignature) jp.getSignature();
 		Method method = signature.getMethod();
 		if (method.isAnnotationPresent(MyLog.class)) {
@@ -60,7 +61,7 @@ public class LogAdvices {
 			log.setRecordTime(System.currentTimeMillis());
 			log.setServerIp(Constants.LOCALHOST);
 			log.setHttpPort(Constants.HTTP_PORT);
-			log.setWebSocketPort(Constants.WEBSOCKET_PORT);
+			log.setWebSocketPort(websocketConfig.getPort());
 			log.setMethod(method.getName());
 			log.setDescribe(myLog.describe());
 			String personId = tokenService.getPersonId();
@@ -72,6 +73,7 @@ public class LogAdvices {
 	
 	@Around("pointcut()")
 	public Object around(ProceedingJoinPoint pjp) throws Throwable {
+		// TODO: 2020/ 9/25 支持tcp
 		Object result = pjp.proceed();
 		String clazzName = pjp.getTarget().getClass().getName();
 		if (aroundLog && !LogAdvices.class.getName().equals(clazzName)) {
@@ -90,7 +92,7 @@ public class LogAdvices {
 			log.setRecordTime(System.currentTimeMillis());
 			log.setServerIp(Constants.LOCALHOST);
 			log.setHttpPort(Constants.HTTP_PORT);
-			log.setWebSocketPort(Constants.WEBSOCKET_PORT);
+			log.setWebSocketPort(websocketConfig.getPort());
 			if (result != null) {
 				log.setResult(result.toString());
 			}

@@ -1,6 +1,6 @@
 package com.asm.zim.server.core.server;
 
-import com.asm.zim.server.config.net.TcpArgsConfig;
+import com.asm.zim.server.config.yaml.TcpConfig;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -8,7 +8,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -30,18 +30,16 @@ public class TcpServer {
 	private ServerBootstrap bootstrap;
 	private ChannelFuture cf;
 	private int port;
-	@Resource(name = "tcpArgsConfig")
-	private TcpArgsConfig tcpArgsConfig;
-	@Value("${im.tcp.start}")
-	private String hasStart = "false";
+	@Autowired
+	private TcpConfig tcpConfig;
 	
 	@PostConstruct
 	public void start() {
-		if (!Boolean.parseBoolean(hasStart)) {
+		if (!tcpConfig.isStart()) {
 			return;
 		}
 		new Thread(() -> {
-			port = tcpArgsConfig.getPort();
+			port = tcpConfig.getPort();
 			try {
 				cf = bootstrap.bind(port).sync();
 				cf.addListener((ChannelFutureListener) future -> {
@@ -66,7 +64,7 @@ public class TcpServer {
 	public void destroy() {
 		bossGroup.shutdownGracefully();
 		workerGroup.shutdownGracefully();
-		if (Boolean.parseBoolean(hasStart)) {
+		if (tcpConfig.isStart()) {
 			logger.info("tcp 端口 {} 关闭", port);
 		}
 	}

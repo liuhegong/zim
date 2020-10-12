@@ -2,7 +2,7 @@ package com.asm.zim.server.service.impl;
 
 import com.asm.zim.common.constants.MessageCode;
 import com.asm.zim.common.constants.Result;
-import com.asm.zim.server.common.constants.Constants;
+import com.asm.zim.server.config.yaml.ImConfig;
 import com.asm.zim.server.core.chat.SystemChatService;
 import com.asm.zim.server.entry.Account;
 import com.asm.zim.server.service.AccountService;
@@ -29,7 +29,8 @@ public class LoginServiceImpl implements LoginService {
 	private TokenService tokenService;
 	@Autowired
 	private SystemChatService systemChatService;
-	
+	@Autowired
+	private ImConfig imConfig;
 	@Override
 	public Result<Map<String, String>> login(String username, String pwd) {
 		Account account = accountService.getAccount(username, pwd);
@@ -48,7 +49,7 @@ public class LoginServiceImpl implements LoginService {
 		Map<String, String> resultMap = new HashMap<>();
 		resultMap.put("token", token);
 		resultMap.put("personId", account.getId());
-		resultMap.put("expireTime", String.valueOf(Constants.SESSION_EXPIRE_TIME));
+		resultMap.put("expireTime", String.valueOf(imConfig.getSessionExpireTime()));
 		result.setData(resultMap);
 		result.setMessage("登录成功");
 		logger.debug("登录成功 token{}", token);

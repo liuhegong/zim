@@ -1,12 +1,12 @@
 package com.asm.zim.server.core.service;
 
 import com.asm.zim.common.entry.TokenAuth;
+import com.asm.zim.server.config.yaml.ImConfig;
 import com.asm.zim.server.core.container.LocalChannelGroup;
 import com.asm.zim.server.service.TokenService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -24,15 +24,15 @@ public class ChannelJobService {
 	@Autowired
 	private TokenService tokenService;
 	
-	@Value("#{${im.check-channel-map}}")
-	private boolean startCheckChannelMap = false;
+	@Autowired
+	private ImConfig imConfig;
 	
 	/**
 	 * 定时检测channel map  每八个小时检测一次
 	 */
 	@Scheduled(cron = "0 0 0/8 * * ?")
 	public void checkChannelMap() {
-		if (startCheckChannelMap) {
+		if (imConfig.isCheckChannelMap()) {
 			logger.info("执行checkChannelMap 开始");
 			long start = System.currentTimeMillis();
 			Set<String> tokenSet = socketChannelGroup.getChannelMap().keySet();

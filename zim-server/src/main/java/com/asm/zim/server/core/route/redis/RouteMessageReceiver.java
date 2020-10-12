@@ -4,7 +4,7 @@ import com.asm.zim.common.entry.NetMessage;
 import com.asm.zim.common.entry.TokenAuth;
 import com.asm.zim.common.proto.BaseMessage;
 import com.asm.zim.server.common.constants.Constants;
-import com.asm.zim.server.config.net.WebSocketArgsConfig;
+import com.asm.zim.server.config.yaml.WebsocketConfig;
 import com.asm.zim.server.core.service.ChangeMessageService;
 import com.asm.zim.server.core.service.DataProtocolService;
 import com.asm.zim.server.service.TokenService;
@@ -27,8 +27,8 @@ public class RouteMessageReceiver {
 	private ChangeMessageService changeMessageService;
 	@Autowired
 	private TokenService tokenService;
-	@Resource(name = "webSocketArgsConfig")
-	private WebSocketArgsConfig webSocketArgsConfig;
+	@Autowired
+	private WebsocketConfig websocketConfig;
 	@Autowired
 	private DataProtocolService dataProtocolService;
 	
@@ -42,7 +42,6 @@ public class RouteMessageReceiver {
 		NetMessage netMessage = gson.fromJson(json, NetMessage.class);
 		BaseMessage.Message message = dataProtocolService.coverNetMessageToProtoMessage(netMessage);
 		TokenAuth tokenAuth = tokenService.getTokenAuthByPersonId(message.getToId());
-		int websocketPort = webSocketArgsConfig.getPort();
 		if (Constants.EQUIPMENT_ID.equals(tokenAuth.getEquipmentId())) {
 			logger.info("当前机器 IP:{},port:{} 消费了一条消息", tokenAuth.getIp(), tokenAuth.getPort());
 			changeMessageService.handleRead(message);

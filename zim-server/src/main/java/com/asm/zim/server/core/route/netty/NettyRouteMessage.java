@@ -4,8 +4,7 @@ import com.asm.zim.common.entry.NetMessage;
 import com.asm.zim.common.entry.TokenAuth;
 import com.asm.zim.common.proto.BaseMessage;
 import com.asm.zim.server.common.constants.Constants;
-import com.asm.zim.server.config.net.WebSocketArgsConfig;
-import com.asm.zim.server.core.container.LocalChannelGroup;
+import com.asm.zim.server.config.route.NettyRouteCondition;
 import com.asm.zim.server.core.route.RouteMessage;
 import com.asm.zim.server.core.service.ChangeMessageService;
 import com.asm.zim.server.core.service.DataProtocolService;
@@ -15,12 +14,17 @@ import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Conditional;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
 
 /**
  * @author : azhao
  * @description
  */
-
+@Component
+@Conditional(NettyRouteCondition.class)
 public class NettyRouteMessage implements RouteMessage {
 	private Logger logger = LoggerFactory.getLogger(NettyRouteMessage.class);
 	@Autowired
@@ -33,6 +37,11 @@ public class NettyRouteMessage implements RouteMessage {
 	private ChangeMessageService changeMessageService;
 	@Autowired
 	private SendMessageService sendMessageService;
+	
+	@PostConstruct
+	public void init() {
+		logger.info("加载Netty 路由方式");
+	}
 	
 	@Override
 	public void sendMessage(NetMessage netMessage) {

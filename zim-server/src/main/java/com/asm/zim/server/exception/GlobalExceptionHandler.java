@@ -21,10 +21,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  */
 @Order(1)
 @ControllerAdvice
+@ResponseBody
 public class GlobalExceptionHandler {
 	private Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 	
-	@ResponseBody
+	
 	@ResponseStatus(HttpStatus.OK)
 	@ExceptionHandler(HttpMessageNotReadableException.class)
 	public Result<String> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
@@ -33,7 +34,6 @@ public class GlobalExceptionHandler {
 		return new Result<String>().failure(ResultCode.Argument_Error);
 	}
 	
-	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
 	@ExceptionHandler(HttpRequestMethodNotSupportedException.class)
 	public Result<String> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {
@@ -41,7 +41,6 @@ public class GlobalExceptionHandler {
 		return new Result<String>().failure(ResultCode.Request_Method_Error);
 	}
 	
-	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
 	@ExceptionHandler(MissingServletRequestParameterException.class)
 	public Result<String> missingServletRequestParameterException(MissingServletRequestParameterException e) {
@@ -49,7 +48,6 @@ public class GlobalExceptionHandler {
 		return new Result<String>().failure(ResultCode.Missing_Argument_Error);
 	}
 	
-	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
 	@ExceptionHandler(UnLoginException.class)
 	public Result<String> unLoginException(UnLoginException e) {
@@ -57,7 +55,6 @@ public class GlobalExceptionHandler {
 		return new Result<String>().failure(ResultCode.UnLogin);
 	}
 	
-	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
 	@ExceptionHandler(Exception.class)
 	public Result<String> handleException(Exception e) {
@@ -66,7 +63,6 @@ public class GlobalExceptionHandler {
 		return new Result<String>().failure(ResultCode.Service_Error);
 	}
 	
-	@ResponseBody
 	@ResponseStatus(HttpStatus.OK)
 	@ExceptionHandler(DataAccessResourceFailureException.class)
 	public Result<String> esError(DataAccessResourceFailureException e) {
