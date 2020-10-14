@@ -1,8 +1,6 @@
 package com.asm.zim.server.common.constants;
 
 import cn.hutool.core.util.IdUtil;
-import cn.hutool.crypto.SecureUtil;
-import cn.hutool.crypto.symmetric.SymmetricAlgorithm;
 import com.asm.zim.common.utils.NetUtil;
 import com.asm.zim.server.config.yaml.ImConfig;
 import com.asm.zim.server.config.yaml.TcpConfig;
@@ -44,10 +42,6 @@ public class Constants {
 	 * 消息通过personId 发送主题
 	 */
 	public static final String REDIS_MESSAGE_SEND_TOPIC = "redis_message_send_topic";
-	/**
-	 * token 来路由发送订阅发布
-	 */
-	public static final String REDIS_MESSAGE_SEND_BY_TOKEN_TOPIC = "redis_message_send_by_token_topic";
 	public static final String REDIS_CHANNEL_TOPIC = "redis_channel_topic";
 	public static final String CURRENT_IP_TOKEN_PREFIX = "current_ip_token_prefix#";
 	

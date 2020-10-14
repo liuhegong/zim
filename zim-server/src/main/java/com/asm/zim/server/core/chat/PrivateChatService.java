@@ -7,14 +7,12 @@ import com.asm.zim.common.constants.MessageType;
 import com.asm.zim.common.entry.FileResponse;
 import com.asm.zim.common.proto.BaseMessage;
 import com.asm.zim.file.client.api.FileManageService;
-import com.asm.zim.server.core.container.LocalChannelGroup;
 import com.asm.zim.server.core.service.DataProtocolService;
 import com.asm.zim.server.core.service.SendMessageService;
 import com.asm.zim.server.dao.MessageFileDao;
 import com.asm.zim.server.entry.Message;
 import com.asm.zim.server.entry.MessageFile;
 import com.asm.zim.server.service.MessageService;
-import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,8 +31,6 @@ public class PrivateChatService extends ChatService {
 	@Autowired
 	private MessageService messageService;
 	@Autowired
-	private LocalChannelGroup socketChannelGroup;
-	@Autowired
 	private MessageFileDao messageFileDao;
 	@Autowired
 	private DataProtocolService dataProtocolService;
@@ -42,7 +38,6 @@ public class PrivateChatService extends ChatService {
 	private SystemChatService systemChatService;
 	@Autowired
 	private SendMessageService sendMessageService;
-	
 	/**
 	 * 保存消息并返回相应
 	 *
@@ -50,10 +45,13 @@ public class PrivateChatService extends ChatService {
 	 */
 	private void saveSendAndResponse(BaseMessage.Message msg) {
 		BaseMessage.Message.Builder sendBuilder = msg.toBuilder();
+		String id = IdUtil.fastSimpleUUID();
+		sendBuilder.setContent(id);//将真实的id返回给客户端
 		systemChatService.systemConfirmMessage(sendBuilder.build());
 		sendBuilder.setMessageType(MessageType.Ordinary);
 		//发送的是文件
 		Message message = dataProtocolService.coverProtoMessageToEntry(msg);
+		message.setId(id);
 		if (message.getMessageCategory() == MessageCategory.File) {
 			messageFileDao.insert(message.getMessageFile());
 		}
@@ -87,13 +85,7 @@ public class PrivateChatService extends ChatService {
 				messageFileDao.insert(messageFile);
 			}
 		}
-		String toId = msg.getToId();
-		Channel channel = sendMessageService.sendByToId(msg);
-		if (channel != null) {
-			logger.info("toId {} 在线发送", toId);
-		} else {
-			logger.info("toId {} 的离线消息", toId);
-		}
+		sendMessageService.sendByToId(msg);
 		logger.info("开始保存消息");
 		saveReceiveMessage(receiveMessage);
 	}

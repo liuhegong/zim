@@ -40,7 +40,6 @@ public class ChangeMessageService {
 	@Autowired
 	private SendMessageService sendMessageService;
 	
-	
 	public void handleRead(BaseMessage.Message msg) {
 		handleRead(null, msg);
 	}
@@ -48,6 +47,7 @@ public class ChangeMessageService {
 	public void handleRead(ChannelHandlerContext ctx, BaseMessage.Message msg) {
 		logger.debug(msg.toString());
 		if (msg.getMessageType() == MessageType.System) {
+			//本机处理
 			if (msg.getCode() == MessageCode.FriendRequest) {
 				logger.info("添加好友请求{}", msg.toString());
 				systemChatService.sendFriendRequest(msg);
@@ -58,7 +58,7 @@ public class ChangeMessageService {
 				logger.info("其他机器发来的应答消息 ");
 				sendMessageService.sendByToken(msg);
 			} else if (msg.getCode() == MessageCode.OnlineNotice || msg.getCode() == MessageCode.OffLineNotice) {
-				logger.info("其他机器发来的应答消息 上线通知");
+				logger.info("其他机器发来的应答消息上线通知");
 				sendMessageService.sendByToId(msg);
 			}
 		} else {

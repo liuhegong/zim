@@ -42,7 +42,7 @@ public class DistributeHandler extends SimpleChannelInboundHandler<BaseMessage.M
 			return;
 		}
 		logger.info("toId 为 {} 在线消息路由转发", toId);
-		routeMessage.sendMessage(message);
+		routeMessage.sendMessageByPersonId(message);
 	}
 	
 	@Override

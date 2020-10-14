@@ -3,7 +3,6 @@ package com.asm.zim.server.config;
 import com.asm.zim.server.common.constants.Constants;
 import com.asm.zim.server.core.container.RedisKeyExpirationListener;
 import com.asm.zim.server.core.route.redis.RouteChannel;
-import com.asm.zim.server.core.route.redis.RouteMessageReceiver;
 import com.asm.zim.server.core.route.redis.RouteMessageSend;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -81,40 +80,27 @@ public class RedisConfig extends CachingConfigurerSupport {
 	
 	@Bean
 	public RedisMessageListenerContainer container(RedisConnectionFactory connectionFactory
-			, MessageListenerAdapter listenerRouteMessageReceiver
 			, MessageListenerAdapter listenerRouteMessageSend
-			, MessageListenerAdapter listenerRouteMessageSendByToken
 			, MessageListenerAdapter listenerRouteChannelReceiver
 	) {
 		RedisMessageListenerContainer container = new RedisMessageListenerContainer();
 		container.setConnectionFactory(connectionFactory);
 		// 可以添加多个 messageListener，配置不同的交换机 类型是 MessageListenerAdapter
-		container.addMessageListener(listenerRouteMessageReceiver, new PatternTopic(Constants.REDIS_MESSAGE_RECEIVE_TOPIC));
 		container.addMessageListener(listenerRouteMessageSend, new PatternTopic(Constants.REDIS_MESSAGE_SEND_TOPIC));
-		container.addMessageListener(listenerRouteMessageSendByToken, new PatternTopic(Constants.REDIS_MESSAGE_SEND_BY_TOKEN_TOPIC));
 		container.addMessageListener(listenerRouteChannelReceiver, new PatternTopic(Constants.REDIS_CHANNEL_TOPIC));
 		return container;
 	}
 	
-	@Bean
-	public MessageListenerAdapter listenerRouteMessageReceiver(RouteMessageReceiver routeMessageReceiver) {
-		return new MessageListenerAdapter(routeMessageReceiver, "receiveMessage");
-	}
 	
 	@Bean
 	public MessageListenerAdapter listenerRouteMessageSend(RouteMessageSend routeMessageSend) {
 		return new MessageListenerAdapter(routeMessageSend, "sendMessage");
-	}
-	@Bean
-	public MessageListenerAdapter listenerRouteMessageSendByToken(RouteMessageSend routeMessageSend) {
-		return new MessageListenerAdapter(routeMessageSend, "sendMessageByToken");
 	}
 	
 	@Bean
 	public MessageListenerAdapter listenerRouteChannelReceiver(RouteChannel routeChannel) {
 		return new MessageListenerAdapter(routeChannel, "receiveMessage");
 	}
-	
 	
 	@Bean
 	public RedisKeyExpirationListener keyExpirationListener(RedisMessageListenerContainer listenerContainer) {

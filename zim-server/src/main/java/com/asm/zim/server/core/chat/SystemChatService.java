@@ -4,7 +4,6 @@ import cn.hutool.core.util.IdUtil;
 import com.asm.zim.common.constants.ChatType;
 import com.asm.zim.common.constants.MessageCode;
 import com.asm.zim.common.constants.MessageType;
-import com.asm.zim.common.entry.NetMessage;
 import com.asm.zim.common.entry.TokenAuth;
 import com.asm.zim.common.proto.BaseMessage;
 import com.asm.zim.server.core.container.LocalChannelGroup;
@@ -18,10 +17,8 @@ import io.netty.channel.ChannelPipeline;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -39,6 +36,7 @@ public class SystemChatService {
 	private TokenService tokenService;
 	@Autowired
 	private RouteMessage routeMessage;
+	
 	/**
 	 * 消息确认
 	 *
@@ -51,7 +49,7 @@ public class SystemChatService {
 		builder.setToId(msg.getFromId());
 		msg = builder.build();
 		logger.info("发送系统消息确认");
-		routeMessage.sendMessage(msg);
+		routeMessage.sendMessageByPersonId(msg);
 	}
 	
 	/**
@@ -63,7 +61,7 @@ public class SystemChatService {
 		builder.setMessageType(MessageType.System);
 		builder.setToId(msg.getFromId());
 		msg = builder.build();
-		routeMessage.receiveMessage(msg);
+		routeMessage.sendMessageByPersonId(msg);
 	}
 	
 	/**
@@ -89,7 +87,7 @@ public class SystemChatService {
 			String id = friend.getFriendId();
 			builder.setToId(id);
 			builder.setSendTime(System.currentTimeMillis());
-			routeMessage.sendMessage(builder.build());
+			routeMessage.sendMessageByPersonId(builder.build());
 		}
 	}
 	
@@ -102,7 +100,7 @@ public class SystemChatService {
 		BaseMessage.Message.Builder builder = msg.toBuilder();
 		builder.setCode(MessageCode.FriendRequest);
 		msg = builder.build();
-		routeMessage.receiveMessage(msg);
+		routeMessage.sendMessageByPersonId(msg);
 	}
 	
 	public void systemLoginResult(ChannelHandlerContext ctx, boolean hasSuccess, String protocol, String personId) {
@@ -118,11 +116,7 @@ public class SystemChatService {
 		builder.setProtocol(protocol);
 		builder.setToId(personId);
 		BaseMessage.Message msg = builder.build();
-		if (!hasSuccess) {
-			ctx.pipeline().writeAndFlush(msg);
-		} else {
-			routeMessage.receiveMessage(msg);
-		}
+		routeMessage.sendMessageByPersonId(msg);
 	}
 	
 	
@@ -158,14 +152,14 @@ public class SystemChatService {
 	public void loginOut(String token, int code) {
 		TokenAuth tokenAuth = tokenService.getTokenAuth(token);
 		if (tokenAuth != null) {
-			NetMessage netMessage = new NetMessage();
-			netMessage.setId(IdUtil.fastSimpleUUID());
-			netMessage.setCode(code);
-			netMessage.setToken(token);
-			netMessage.setMessageType(MessageType.System);
-			netMessage.setChatType(ChatType.privateChat);
-			netMessage.setFromId(tokenAuth.getPersonId());
-			routeMessage.sendMessage(netMessage);
+			BaseMessage.Message.Builder builder = BaseMessage.Message.newBuilder();
+			builder.setId(IdUtil.fastSimpleUUID());
+			builder.setCode(code);
+			builder.setToken(token);
+			builder.setMessageType(MessageType.System);
+			builder.setChatType(ChatType.privateChat);
+			builder.setFromId(tokenAuth.getPersonId());
+			routeMessage.sendMessageByPersonId(builder.build());
 		}
 	}
 }

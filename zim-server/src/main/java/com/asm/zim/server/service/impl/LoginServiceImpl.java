@@ -64,6 +64,6 @@ public class LoginServiceImpl implements LoginService {
 		systemChatService.loginOut(token, messageCode);
 		tokenService.removeToken(token);
 		logger.info("退出 token {}", token);
-		return null;
+		return new Result<String>().success();
 	}
 }

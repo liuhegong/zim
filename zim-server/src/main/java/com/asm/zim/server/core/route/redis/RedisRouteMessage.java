@@ -33,24 +33,13 @@ public class RedisRouteMessage implements RouteMessage {
 	}
 	
 	@Override
-	public void sendMessage(NetMessage netMessage) {
-		redisTemplate.convertAndSend(Constants.REDIS_MESSAGE_RECEIVE_TOPIC, netMessage);
-	}
-	
-	@Override
-	public void sendMessage(BaseMessage.Message message) {
-		NetMessage netMessage = dataProtocolService.coverProtoMessageToNetMessage(message);
-		sendMessage(netMessage);
-	}
-	
-	@Override
-	public void receiveMessage(NetMessage netMessage) {
+	public void sendMessageByPersonId(NetMessage netMessage) {
 		redisTemplate.convertAndSend(Constants.REDIS_MESSAGE_SEND_TOPIC, netMessage);
 	}
 	
 	@Override
-	public void receiveMessage(BaseMessage.Message message) {
+	public void sendMessageByPersonId(BaseMessage.Message message) {
 		NetMessage netMessage = dataProtocolService.coverProtoMessageToNetMessage(message);
-		receiveMessage(netMessage);
+		redisTemplate.convertAndSend(Constants.REDIS_MESSAGE_SEND_TOPIC, netMessage);
 	}
 }

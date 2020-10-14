@@ -76,7 +76,7 @@ public class TcpClient {
 						builder.setProtocol(NetProtocol.TCP);
 						builder.setToken(Common.token);
 						builder.setFromId(personId);
-						builder.setToId("6187f1f07c1648faadb794ead6a2269f");//zhangsan
+						builder.setToId("514cc43ba09a473e9bd1ea31ebedc004");//zhangsan
 						builder.setTerminalType(TerminalType.Android.getValue());
 						builder.setMessageType(MessageType.Ordinary);
 						channel.writeAndFlush(builder.build());
@@ -103,7 +103,7 @@ public class TcpClient {
 	
 	public static void main(String[] args) {
 		TcpClient tcpClient = new TcpClient();
-		//tcpClient.start("127.0.0.1", 7777);
-		tcpClient.start("192.168.52.129", 10000);
+		tcpClient.start("127.0.0.1", 7777);
+		//tcpClient.start("192.168.52.129", 10000);
 	}
 }

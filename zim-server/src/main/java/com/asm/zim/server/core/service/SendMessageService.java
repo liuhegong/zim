@@ -1,5 +1,6 @@
 package com.asm.zim.server.core.service;
 
+import com.asm.zim.common.entry.NetMessage;
 import com.asm.zim.common.proto.BaseMessage;
 import com.asm.zim.server.core.container.LocalChannelGroup;
 import io.netty.channel.Channel;
@@ -24,6 +25,10 @@ public class SendMessageService {
 	public Channel sendByToId(BaseMessage.Message msg) {
 		Channel channel = localChannelGroup.getChannelByPerson(msg.getToId());
 		return send(channel, msg);
+	}
+	
+	public Channel sendByToId(NetMessage netMessage) {
+		return sendByToId(dataProtocolService.coverNetMessageToProtoMessage(netMessage));
 	}
 	
 	/**

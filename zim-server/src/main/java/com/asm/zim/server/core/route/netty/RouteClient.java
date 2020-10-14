@@ -16,6 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -27,12 +30,13 @@ public class RouteClient {
 	private Logger logger = LoggerFactory.getLogger(RouteClient.class);
 	@Autowired
 	private TcpConfig tcpConfig;
+	private Bootstrap bootstrap = new Bootstrap();
+	private EventLoopGroup group = new NioEventLoopGroup();
 	/**
 	 * ip
 	 * channel
 	 */
-	
-	private ConcurrentHashMap<String, Channel> channelMap = new ConcurrentHashMap<>();
+	private Map<String, Channel> channelMap = new ConcurrentHashMap<>();
 	
 	public Channel getChannel(String ip) {
 		if (StringUtils.isEmpty(ip)) {
@@ -47,49 +51,51 @@ public class RouteClient {
 		return channel;
 	}
 	
+	@PostConstruct
+	public void initSocket() {
+		bootstrap.group(group)
+				.channel(NioSocketChannel.class)
+				.handler(new ChannelInitializer<SocketChannel>() {
+					@Override
+					protected void initChannel(SocketChannel socketChannel) throws Exception {
+						ChannelPipeline pipeline = socketChannel.pipeline();
+						pipeline.addLast(new ProtobufEncoder());
+						pipeline.addLast(new ProtobufDecoder(BaseMessage.Message.getDefaultInstance()));
+						pipeline.addLast(new ProtobufVarint32LengthFieldPrepender());
+						pipeline.addLast(new SimpleChannelInboundHandler<BaseMessage.Message>() {
+							@Override
+							protected void channelRead0(ChannelHandlerContext channelHandlerContext, BaseMessage.Message message) throws Exception {
+								String content = message.getContent();
+								logger.info(content);
+							}
+						});
+					}
+				});
+	}
+	
+	@PreDestroy
+	public void stop() {
+		group.shutdownGracefully();
+	}
+	
 	private void connect(String ip, int port) {
-		Bootstrap bootstrap = new Bootstrap();
-		EventLoopGroup group = new NioEventLoopGroup();
 		try {
-			bootstrap.group(group)
-					.channel(NioSocketChannel.class)
-					.handler(new ChannelInitializer<SocketChannel>() {
-						@Override
-						protected void initChannel(SocketChannel socketChannel) throws Exception {
-							ChannelPipeline pipeline = socketChannel.pipeline();
-							pipeline.addLast(new ProtobufEncoder());
-							pipeline.addLast(new ProtobufDecoder(BaseMessage.Message.getDefaultInstance()));
-							pipeline.addLast(new ProtobufVarint32LengthFieldPrepender());
-							pipeline.addLast(new SimpleChannelInboundHandler<BaseMessage.Message>() {
-								@Override
-								protected void channelRead0(ChannelHandlerContext channelHandlerContext, BaseMessage.Message message) throws Exception {
-									String content = message.getContent();
-									logger.info(content);
-								}
-							});
-						}
-					});
-			logger.info("客户端 ok..");
-			ChannelFuture future = bootstrap.connect(ip, port);
-			future.sync();
+			ChannelFuture future = bootstrap.connect(ip, port).sync();
 			Channel channel = future.channel();
 			if (future.isSuccess()) {
 				channelMap.put(ip, channel);
 				logger.info("客户端{}:{}建立成功", ip, port);
 			} else {
 				logger.info("客户端{}:{}建立失败", ip, port);
+			/*future.channel().eventLoop().schedule(new Runnable() {
+				@Override
+				public void run() {
+					connect(ip, port);
+				}
+			}, 5, TimeUnit.SECONDS);*/
 			}
-			ChannelFuture closeFuture = future.channel().closeFuture();
-			if (closeFuture.isSuccess()) {
-				logger.info("客户端{}:{}关闭成功", ip, port);
-			} else {
-				logger.info("客户端{}:{}关闭失败", ip, port);
-			}
-			closeFuture.sync();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-		} finally {
-			group.shutdownGracefully();
 		}
 	}
 }

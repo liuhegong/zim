@@ -8,7 +8,6 @@ import com.asm.zim.server.config.route.NettyRouteCondition;
 import com.asm.zim.server.core.route.RouteMessage;
 import com.asm.zim.server.core.service.ChangeMessageService;
 import com.asm.zim.server.core.service.DataProtocolService;
-import com.asm.zim.server.core.service.SendMessageService;
 import com.asm.zim.server.service.TokenService;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
@@ -35,8 +34,6 @@ public class NettyRouteMessage implements RouteMessage {
 	private RouteClient routeClient;
 	@Autowired
 	private ChangeMessageService changeMessageService;
-	@Autowired
-	private SendMessageService sendMessageService;
 	
 	@PostConstruct
 	public void init() {
@@ -44,48 +41,30 @@ public class NettyRouteMessage implements RouteMessage {
 	}
 	
 	@Override
-	public void sendMessage(NetMessage netMessage) {
-		TokenAuth tokenAuth = tokenService.getTokenAuthByPersonId(netMessage.getToId());
-		if (tokenAuth == null) {
-			logger.debug("tokenAuth toId {} 为空", netMessage.getToId());
-			return;
-		}
-		BaseMessage.Message message = dataProtocolService.coverNetMessageToProtoMessage(netMessage);
+	public void sendMessageByPersonId(NetMessage netMessage) {
+		sendMessageByPersonId(dataProtocolService.coverNetMessageToProtoMessage(netMessage));
+	}
+	
+	private void sendMessage(TokenAuth tokenAuth, BaseMessage.Message message) {
 		if (Constants.EQUIPMENT_ID.equals(tokenAuth.getEquipmentId())) {
 			//本机处理
-			logger.info("IP:{}消费了一条消息", tokenAuth.getIp());
+			logger.info("IP:{}本机处理消息", tokenAuth.getIp());
 			changeMessageService.handleRead(message);
 			return;
 		}
-		logger.info("非本机处理");
-		//非本机处理消息转发
+		logger.info("非本机处理消息转发 {}",tokenAuth.getIp());
 		Channel channel = routeClient.getChannel(tokenAuth.getIp());
 		channel.writeAndFlush(message);
 	}
 	
 	@Override
-	public void sendMessage(BaseMessage.Message message) {
-		sendMessage(dataProtocolService.coverProtoMessageToNetMessage(message));
-	}
-	
-	@Override
-	public void receiveMessage(NetMessage netMessage) {
-		BaseMessage.Message message = dataProtocolService.coverNetMessageToProtoMessage(netMessage);
-		Channel channel = sendMessageService.sendByToken(message);
-		if (channel != null) {
-			logger.info("消息发送给 token为 {}", netMessage.getToken());
+	public void sendMessageByPersonId(BaseMessage.Message message) {
+		TokenAuth tokenAuth = tokenService.getTokenAuthByPersonId(message.getToId());
+		if (tokenAuth == null) {
+			logger.info("tokeAuth为空,toId 为 {}",message.getToId());
 			return;
 		}
-		logger.info("channel 为空");
+		sendMessage(tokenAuth, message);
 	}
 	
-	@Override
-	public void receiveMessage(BaseMessage.Message message) {
-		Channel channel = sendMessageService.sendByToken(message);
-		if (channel != null) {
-			logger.info("消息发送给 token为 {}", message.getToken());
-			return;
-		}
-		logger.info("channel 为空");
-	}
 }

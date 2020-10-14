@@ -13,16 +13,8 @@ public interface RouteMessage {
 	 *
 	 * @param netMessage
 	 */
-	void sendMessage(NetMessage netMessage);
+	void sendMessageByPersonId(NetMessage netMessage);
 	
-	void sendMessage(BaseMessage.Message message);
+	void sendMessageByPersonId(BaseMessage.Message message);
 	
-	/**
-	 * 各个系统收到消息
-	 *
-	 * @param netMessage
-	 */
-	void receiveMessage(NetMessage netMessage);
-	
-	void receiveMessage(BaseMessage.Message message);
 }
