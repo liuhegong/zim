@@ -1,7 +1,6 @@
 package com.asm.zim.server.controller;
 
 import com.asm.zim.file.client.api.FileManageService;
-import com.asm.zim.server.service.TokenService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,12 +20,9 @@ public class FileController {
 	private Logger logger = LoggerFactory.getLogger(FileController.class);
 	@Autowired
 	private FileManageService fileManageService;
-	@Autowired
-	private TokenService tokenService;
 	
 	@RequestMapping("download/{id}")
 	public void download(@PathVariable("id") String id, HttpServletResponse response) {
-		String token = tokenService.getToken();
-		fileManageService.download(id,token,response);
+		fileManageService.download(id,response);
 	}
 }

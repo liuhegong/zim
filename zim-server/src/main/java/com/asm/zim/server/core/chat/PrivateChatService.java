@@ -1,20 +1,16 @@
 package com.asm.zim.server.core.chat;
 
 import cn.hutool.core.util.IdUtil;
-import com.asm.zim.common.constants.MessageCategory;
-import com.asm.zim.common.constants.MessageReadState;
 import com.asm.zim.common.constants.MessageType;
-import com.asm.zim.common.entry.FileResponse;
 import com.asm.zim.common.proto.BaseMessage;
-import com.asm.zim.file.client.api.FileManageService;
 import com.asm.zim.server.core.service.DataProtocolService;
 import com.asm.zim.server.core.service.SendMessageService;
 import com.asm.zim.server.dao.MessageFileDao;
 import com.asm.zim.server.entry.Message;
-import com.asm.zim.server.entry.MessageFile;
 import com.asm.zim.server.service.MessageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,8 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service("privateChatService")
 public class PrivateChatService extends ChatService {
 	private Logger logger = LoggerFactory.getLogger(PrivateChatService.class);
-	@Autowired
-	private FileManageService fileManageService;
+	
 	@Autowired
 	private MessageService messageService;
 	@Autowired
@@ -38,6 +33,9 @@ public class PrivateChatService extends ChatService {
 	private SystemChatService systemChatService;
 	@Autowired
 	private SendMessageService sendMessageService;
+	@Autowired(required = false)
+	private RabbitTemplate rabbitTemplate;
+	
 	/**
 	 * 保存消息并返回相应
 	 *
@@ -52,11 +50,11 @@ public class PrivateChatService extends ChatService {
 		//发送的是文件
 		Message message = dataProtocolService.coverProtoMessageToEntry(msg);
 		message.setId(id);
-		if (message.getMessageCategory() == MessageCategory.File) {
-			messageFileDao.insert(message.getMessageFile());
+		if (rabbitTemplate != null) {
+			logger.info("mq发送消息保存");
+		} else {
+			messageService.saveSend(message);
 		}
-		logger.info("开始保存消息");
-		saveSendMessage(message);
 	}
 	
 	/**
@@ -66,28 +64,18 @@ public class PrivateChatService extends ChatService {
 	 */
 	private void saveReceiveAndReceive(BaseMessage.Message msg) {
 		BaseMessage.Message.Builder receiveBuilder = msg.toBuilder();
-		String messageId = IdUtil.fastSimpleUUID();
 		receiveBuilder.setId(IdUtil.fastSimpleUUID());
 		receiveBuilder.setMessageType(MessageType.Ordinary);
-		Message receiveMessage = dataProtocolService.coverProtoMessageToEntry(msg);
+		BaseMessage.Message receiveBaseMessage = receiveBuilder.build();
+		sendMessageService.sendByToId(receiveBaseMessage);
+		Message receiveMessage = dataProtocolService.coverProtoMessageToEntry(receiveBaseMessage);
 		receiveMessage.setPersonId(msg.getToId());
-		receiveMessage.setId(messageId);
-		//接收的是文件
-		if (msg.getMessageCategory() == MessageCategory.File) {
-			//接收文件复制 不共用
-			String token = msg.getToken();
-			MessageFile messageFile = receiveMessage.getMessageFile();
-			FileResponse fileResponse = fileManageService.copy(messageFile.getId(), token);
-			if (fileResponse != null) {
-				messageFile.setId(fileResponse.getId());
-				messageFile.setUrl(fileResponse.getUrl());
-				messageFile.setMessageId(messageId);
-				messageFileDao.insert(messageFile);
-			}
+		if (rabbitTemplate!=null){
+			logger.info("mq发送消息保存");
+		}else {
+			messageService.saveReceive(receiveMessage);
 		}
-		sendMessageService.sendByToId(msg);
-		logger.info("开始保存消息");
-		saveReceiveMessage(receiveMessage);
+		
 	}
 	
 	@Override
@@ -96,22 +84,5 @@ public class PrivateChatService extends ChatService {
 		logger.info("私聊");
 		saveSendAndResponse(msg);
 		saveReceiveAndReceive(msg);
-	}
-	
-	/**
-	 * 保存发送消息到数据库
-	 */
-	private void saveSendMessage(Message sendMessage) {
-		sendMessage.setPersonId(sendMessage.getFromId());
-		sendMessage.setReadState(MessageReadState.HAS_READ);
-		messageService.addMessage(sendMessage);
-	}
-	
-	/**
-	 * 保存接收消息
-	 */
-	private void saveReceiveMessage(Message receiveMessage) {
-		receiveMessage.setReadState(MessageReadState.UN_READ);
-		messageService.addMessage(receiveMessage);
 	}
 }

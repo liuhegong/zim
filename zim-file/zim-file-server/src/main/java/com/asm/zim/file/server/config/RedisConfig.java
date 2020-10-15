@@ -30,8 +30,6 @@ import java.io.Serializable;
 public class RedisConfig extends CachingConfigurerSupport {
 	private Logger logger = LoggerFactory.getLogger(RedisConfig.class);
 	
-	
-	
 	@Bean
 	public RedisTemplate<String, Serializable> redisTemplate(LettuceConnectionFactory redisConnectionFactory) {
 		RedisTemplate<String, Serializable> template = new RedisTemplate<>();

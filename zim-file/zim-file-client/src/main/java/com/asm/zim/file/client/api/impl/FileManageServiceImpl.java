@@ -63,9 +63,8 @@ public class FileManageServiceImpl implements FileManageService {
 	}
 	
 	@Override
-	public void removeFile(String id, String token) {
+	public void removeFile(String id) {
 		Map<String, Object> map = new HashMap<>();
-		map.put("token", token);
 		String result = HttpUtil.post(baseUrl + "/file/remove/" + id, map);
 		logger.info(result);
 	}
@@ -92,12 +91,11 @@ public class FileManageServiceImpl implements FileManageService {
 	}
 	
 	/**
-	 * @param url   真实url
+	 * @param url  真实url
 	 * @param list
-	 * @param token
 	 * @return 上传失败返回 null
 	 */
-	public List<FileResponse> upload(String url, List<FileRequest> list, String token) {
+	public List<FileResponse> upload(String url, List<FileRequest> list) {
 		if (list == null) {
 			return null;
 		}
@@ -110,7 +108,6 @@ public class FileManageServiceImpl implements FileManageService {
 				builder.addBinaryBody("file", ufe.getBytes(),
 						ContentType.MULTIPART_FORM_DATA, ufe.getFileName());
 			}
-			builder.addTextBody("token", token);
 			httpPost.setEntity(builder.build());
 			HttpResponse response = client.execute(httpPost);
 			HttpEntity responseEntity = response.getEntity();
@@ -133,10 +130,9 @@ public class FileManageServiceImpl implements FileManageService {
 	/**
 	 * @param url       真实url
 	 * @param fileEntry
-	 * @param token
 	 * @return
 	 */
-	public FileResponse upload(String url, FileRequest fileEntry, String token) {
+	public FileResponse upload(String url, FileRequest fileEntry) {
 		if (fileEntry == null) {
 			return null;
 		}
@@ -148,7 +144,6 @@ public class FileManageServiceImpl implements FileManageService {
 			builder.setCharset(Charset.forName("UTF-8"));
 			builder.addBinaryBody("file", fileEntry.getBytes(),
 					ContentType.MULTIPART_FORM_DATA, fileEntry.getFileName());
-			builder.addTextBody("token", token);
 			httpPost.setEntity(builder.build());
 			HttpResponse response = client.execute(httpPost);
 			HttpEntity responseEntity = response.getEntity();
@@ -172,21 +167,21 @@ public class FileManageServiceImpl implements FileManageService {
 		return null;
 	}
 	
-	public FileResponse upload(FileRequest uploadFileEntry, String token) {
-		return upload(baseUrl + "/file/upload", uploadFileEntry, token);
+	public FileResponse upload(FileRequest uploadFileEntry) {
+		return upload(baseUrl + "/file/upload", uploadFileEntry);
 	}
 	
-	public List<FileResponse> upload(List<FileRequest> list, String token) {
-		return upload(baseUrl + "/file/multiUpload", list, token);
+	public List<FileResponse> upload(List<FileRequest> list) {
+		return upload(baseUrl + "/file/multiUpload", list);
 	}
 	
 	@Override
-	public void download(String id, String token, HttpServletResponse response) {
-		String url = baseUrl + "/file/download/" + id + "?token=" + token;
+	public void download(String id, HttpServletResponse response) {
+		String url = baseUrl + "/file/download/" + id;
 		OutputStream os = null;
 		try {
 			os = response.getOutputStream();
-			FileResponse fileResponse = getInfo(id, token);
+			FileResponse fileResponse = getInfo(id);
 			if (fileResponse == null) {
 				Result<String> result = new Result<String>().failure();
 				os.write(JSON.toJSONString(result).getBytes());
@@ -213,18 +208,18 @@ public class FileManageServiceImpl implements FileManageService {
 	}
 	
 	@Override
-	public FileResponse copy(String id, String token) {
+	public FileResponse copy(String id) {
 		Map<String, Object> map = new HashMap<>();
 		map.put("id", id);
-		Result<?> result = post("/file/copy", map, token);
+		Result<?> result = post("/file/copy", map);
 		return parseFileResponse(result);
 	}
 	
 	@Override
-	public FileResponse getInfo(String id, String token) {
+	public FileResponse getInfo(String id) {
 		Map<String, Object> map = new HashMap<>();
 		map.put("id", id);
-		Result<?> result = post("/file/getInfo", map, token);
+		Result<?> result = post("/file/getInfo", map);
 		return parseFileResponse(result);
 	}
 	
@@ -240,11 +235,10 @@ public class FileManageServiceImpl implements FileManageService {
 	}
 	
 	@Override
-	public Result<?> post(String url, Map<String, Object> map, String token) {
+	public Result<?> post(String url, Map<String, Object> map) {
 		if (map == null) {
 			map = new HashMap<>();
 		}
-		map.put("token", token);
 		String json = HttpUtil.post(baseUrl + url, map);
 		return JSON.parseObject(json, Result.class);
 	}

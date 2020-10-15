@@ -84,12 +84,12 @@ public class PersonController {
 		Person person = personService.findPerson(personId);
 		String oldHeader = person.getHeader();
 		FileRequest fileEntry = new FileRequest(file.getOriginalFilename(), file.getBytes());
-		FileResponse fileResponse = fileManageService.upload(fileEntry, token);
+		FileResponse fileResponse = fileManageService.upload(fileEntry);
 		if (fileResponse != null) {
 			person.setHeader(fileResponse.getUrl());
 			personService.updatePersonById(person);
 			String fileId = FileUtil.getIdByUrl(oldHeader);
-			fileManageService.removeFile(fileId, token);
+			fileManageService.removeFile(fileId);
 			return new Result<String>().success(person.getHeader());
 		} else {
 			return new Result<String>().failure();

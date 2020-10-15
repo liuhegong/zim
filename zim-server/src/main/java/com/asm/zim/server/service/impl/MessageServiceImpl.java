@@ -5,11 +5,14 @@ import com.asm.zim.common.constants.ChatType;
 import com.asm.zim.common.constants.MessageCategory;
 import com.asm.zim.common.constants.MessageReadState;
 import com.asm.zim.common.constants.MessageType;
+import com.asm.zim.common.entry.FileResponse;
+import com.asm.zim.file.client.api.FileManageService;
 import com.asm.zim.server.common.constants.Constants;
 import com.asm.zim.server.common.constants.MyPage;
 import com.asm.zim.server.dao.MessageDao;
 import com.asm.zim.server.dao.MessageFileDao;
 import com.asm.zim.server.entry.Message;
+import com.asm.zim.server.entry.MessageFile;
 import com.asm.zim.server.service.MessageService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -36,7 +39,8 @@ public class MessageServiceImpl implements MessageService {
 	private MessageDao messageDao;
 	@Autowired
 	private MessageFileDao messageFileDao;
-	
+	@Autowired
+	private FileManageService fileManageService;
 	@Override
 	public void addMessage(Message message) {
 		if (message.getId() == null) {
@@ -112,6 +116,36 @@ public class MessageServiceImpl implements MessageService {
 		if (message.getMessageCategory() == MessageCategory.File) {
 			// fileManageService.removeFile();
 		}
+	}
+	
+	@Override
+	public void saveSend(Message message) {
+		if (message.getMessageCategory() == MessageCategory.File) {
+			messageFileDao.insert(message.getMessageFile());
+		}
+		logger.info("开始保存消息");
+		message.setPersonId(message.getFromId());
+		message.setReadState(MessageReadState.HAS_READ);
+		addMessage(message);
+	}
+	
+	@Override
+	public void saveReceive(Message message) {
+		//接收的是文件
+		if (message.getMessageCategory() == MessageCategory.File) {
+			//接收文件复制 不共用
+			MessageFile messageFile = message.getMessageFile();
+			FileResponse fileResponse = fileManageService.copy(messageFile.getId());
+			if (fileResponse != null) {
+				messageFile.setId(fileResponse.getId());
+				messageFile.setUrl(fileResponse.getUrl());
+				messageFile.setMessageId(message.getId());
+				messageFileDao.insert(messageFile);
+			}
+		}
+		logger.info("开始保存消息");
+		message.setReadState(MessageReadState.UN_READ);
+		addMessage(message);
 	}
 	
 	

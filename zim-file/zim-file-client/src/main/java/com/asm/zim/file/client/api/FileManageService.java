@@ -13,35 +13,32 @@ import java.util.Map;
  * @description
  */
 public interface FileManageService {
-	void removeFile(String id, String token);
+	void removeFile(String id);
 	
 	/**
 	 * @param url   真实url
 	 * @param list
-	 * @param token
 	 * @return
 	 */
-	List<FileResponse> upload(String url, List<FileRequest> list, String token);
+	List<FileResponse> upload(String url, List<FileRequest> list);
 	
 	/**
 	 * @param url       真实url
 	 * @param fileEntry
-	 * @param token
 	 * @return url
 	 */
-	FileResponse upload(String url, FileRequest fileEntry, String token);
+	FileResponse upload(String url, FileRequest fileEntry);
 	
 	/**
 	 * @param uploadFileEntry
-	 * @param token
 	 * @return 返回 url
 	 */
-	FileResponse upload(FileRequest uploadFileEntry, String token);
+	FileResponse upload(FileRequest uploadFileEntry);
 	
 	
-	List<FileResponse> upload(List<FileRequest> list, String token);
+	List<FileResponse> upload(List<FileRequest> list);
 	
-	void download(String id, String token, HttpServletResponse response);
+	void download(String id,  HttpServletResponse response);
 	
 	/**
 	 * 根据 文件 id 复制
@@ -49,16 +46,15 @@ public interface FileManageService {
 	 * @param id
 	 * @return
 	 */
-	FileResponse copy(String id, String token);
+	FileResponse copy(String id);
 	
-	FileResponse getInfo(String id, String token);
+	FileResponse getInfo(String id);
 	
 	/**
 	 * 网络 请求
 	 *
 	 * @param map
-	 * @param token
 	 * @return
 	 */
-	Result<?> post(String url,Map<String, Object> map, String token);
+	Result<?> post(String url,Map<String, Object> map);
 }

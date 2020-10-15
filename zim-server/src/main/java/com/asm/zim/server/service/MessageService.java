@@ -66,4 +66,8 @@ public interface MessageService {
 	
 	
 	void removeMessage(String id);
+	
+	void saveSend(Message message);
+	
+	void saveReceive(Message message);
 }

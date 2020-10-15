@@ -78,7 +78,7 @@ public class MessageController {
 		String token = tokenService.getToken();
 		try {
 			FileRequest fileEntry = new FileRequest(file.getOriginalFilename(), file.getBytes());
-			FileResponse fileResponse = fileManageService.upload(fileEntry, token);
+			FileResponse fileResponse = fileManageService.upload(fileEntry);
 			if (fileResponse == null) {
 				return new Result<MessageFile>().failure();
 			}
