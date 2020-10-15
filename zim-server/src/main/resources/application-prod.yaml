@@ -36,7 +36,7 @@ spring:
         min-idle: 0
   cache.type: redis
   rabbitmq:
-    username: root
+    username: admin
     password: 123456
     host: 192.168.52.129
     port: 5672
