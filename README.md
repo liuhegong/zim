@@ -12,7 +12,7 @@ web端地址说明 :https://github.com/asm2356/zim-web
 **产品技术选型：**
 
 1. **前端:**  vue,iview,protobufjs,axios
-2. **后端:**  mysql, redis, netty,springboot
+2. **后端:**  mysql, redis, netty,springboot,rabbitmq
 3. **部署**:  nginx
 
 **模块说明:**
