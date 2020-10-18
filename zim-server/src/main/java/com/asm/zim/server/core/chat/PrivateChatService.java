@@ -47,10 +47,10 @@ public class PrivateChatService extends ChatService {
 		String id = IdUtil.fastSimpleUUID();
 		sendBuilder.setContent(id);//将真实的id返回给客户端
 		systemChatService.systemConfirmMessage(sendBuilder.build());
-		sendBuilder.setMessageType(MessageType.Ordinary);
 		//发送的是文件
+		sendBuilder.setContent(msg.getContent());
+		sendBuilder.setId(id);
 		Message message = dataProtocolService.coverProtoMessageToEntry(msg);
-		message.setId(id);
 		if (rabbitTemplate != null) {
 			logger.info("mq发送消息保存");
 			rabbitTemplate.convertAndSend(RabbitConfig.SEND_MESSAGE_QUEUE, message);
