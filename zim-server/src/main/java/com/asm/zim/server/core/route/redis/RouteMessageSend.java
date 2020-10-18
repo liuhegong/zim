@@ -13,6 +13,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Set;
+
 /**
  * @author : azhao
  * @description 发送消息 channel 路由 通知
@@ -38,17 +40,15 @@ public class RouteMessageSend {
 		NetMessage netMessage = gson.fromJson(json, NetMessage.class);
 		BaseMessage.Message message = dataProtocolService.coverNetMessageToProtoMessage(netMessage);
 		String toId = message.getToId();
-		TokenAuth tokenAuth = tokenService.getTokenAuthByPersonId(toId);
-		if (tokenAuth == null) {
-			logger.info("toId {} 不在线", toId);
-			return;
-		}
-		if (Constants.EQUIPMENT_ID.equals(tokenAuth.getEquipmentId())) {
-			//本机处理
-			logger.info("IP:{}消费了一条消息", tokenAuth.getIp());
-			changeMessageService.handleRead(message);
-		} else {
-			logger.info("IP:{}忽略了一条消息", tokenAuth.getIp());
+		Set<TokenAuth> tokenAuths = tokenService.getTokenAuthByPersonId(toId);
+		for (TokenAuth tokenAuth : tokenAuths) {
+			if (Constants.EQUIPMENT_ID.equals(tokenAuth.getEquipmentId())) {
+				//本机处理
+				logger.info("IP:{}消费了一条消息", tokenAuth.getIp());
+				changeMessageService.handleRead(message);
+			} else {
+				logger.info("IP:{}忽略了一条消息", tokenAuth.getIp());
+			}
 		}
 	}
 }

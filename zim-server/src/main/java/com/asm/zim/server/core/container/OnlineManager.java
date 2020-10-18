@@ -1,5 +1,6 @@
 package com.asm.zim.server.core.container;
 
+import com.asm.zim.common.constants.TerminalType;
 import com.asm.zim.server.entry.Friend;
 import com.asm.zim.server.service.FriendGroupService;
 import org.slf4j.Logger;
@@ -31,9 +32,13 @@ public class OnlineManager {
 		List<String> idList = friendList.stream().map(Friend::getFriendId).collect(Collectors.toList());
 		List<String> onLineIdList = new LinkedList<>();
 		for (String id : idList) {
-			if (redisTemplate.opsForValue().get(id) != null) {
-				onLineIdList.add(id);
+			TerminalType[] terminalTypes = TerminalType.values();
+			for (TerminalType terminalType : terminalTypes) {
+				if (redisTemplate.opsForValue().get(terminalType.name() + "_" + id) != null) {
+					onLineIdList.add(id);
+				}
 			}
+			
 		}
 		return onLineIdList;
 	}

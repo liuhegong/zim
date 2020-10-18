@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Set;
 
 /**
  * @author : azhao
@@ -35,10 +36,10 @@ public class DistributeHandler extends SimpleChannelInboundHandler<BaseMessage.M
 	@Override
 	protected void channelRead0(ChannelHandlerContext ctx, BaseMessage.Message message) throws Exception {
 		String toId = message.getToId();
-		TokenAuth tokenAuth = tokenService.getTokenAuthByPersonId(toId);
-		if (tokenAuth == null) {
+		Set<TokenAuth> tokenAuths = tokenService.getTokenAuthByPersonId(toId);
+		if (tokenAuths.size() == 0) {
 			logger.info("toId {} 不在线本机处理", toId);
-			changeMessageService.handleRead(ctx,message);
+			changeMessageService.handleRead(ctx, message);
 			return;
 		}
 		logger.info("toId 为 {} 在线消息路由转发", toId);

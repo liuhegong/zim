@@ -9,7 +9,7 @@ import java.util.Map;
  * @description
  */
 public interface LoginService {
-	Result<Map<String, String>> login(String username, String pwd);
+	Result<Map<String, String>> login(String username, String pwd,String terminalType);
 	
 	
 	Result<String> loginOut(String token,int messageCode);

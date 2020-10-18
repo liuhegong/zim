@@ -36,7 +36,7 @@ public class Message implements Serializable, Cloneable {
 	@TableField(value = "chat_type")
 	private int chatType;
 	@TableField(value = "terminal_type")
-	private int terminalType;
+	private String terminalType;
 	@TableField
 	private String protocol;
 	@TableField(value = "read_state")

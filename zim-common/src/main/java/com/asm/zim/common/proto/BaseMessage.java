@@ -1330,9 +1330,18 @@ public final class BaseMessage {
      *终端类型
      * </pre>
      *
-     * <code>int32 terminalType = 10;</code>
+     * <code>string terminalType = 10;</code>
      */
-    int getTerminalType();
+    String getTerminalType();
+    /**
+     * <pre>
+     *终端类型
+     * </pre>
+     *
+     * <code>string terminalType = 10;</code>
+     */
+    com.google.protobuf.ByteString
+        getTerminalTypeBytes();
 
     /**
      * <pre>
@@ -1415,7 +1424,7 @@ public final class BaseMessage {
       messageType_ = 0;
       messageCategory_ = 0;
       chatType_ = 0;
-      terminalType_ = 0;
+      terminalType_ = "";
       protocol_ = "";
       token_ = "";
       data_ = "";
@@ -1494,9 +1503,10 @@ public final class BaseMessage {
               chatType_ = input.readInt32();
               break;
             }
-            case 80: {
+            case 82: {
+              String s = input.readStringRequireUtf8();
 
-              terminalType_ = input.readInt32();
+              terminalType_ = s;
               break;
             }
             case 90: {
@@ -1760,16 +1770,45 @@ public final class BaseMessage {
     }
 
     public static final int TERMINALTYPE_FIELD_NUMBER = 10;
-    private int terminalType_;
+    private volatile Object terminalType_;
     /**
      * <pre>
      *终端类型
      * </pre>
      *
-     * <code>int32 terminalType = 10;</code>
+     * <code>string terminalType = 10;</code>
      */
-    public int getTerminalType() {
-      return terminalType_;
+    public String getTerminalType() {
+      Object ref = terminalType_;
+      if (ref instanceof String) {
+        return (String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        String s = bs.toStringUtf8();
+        terminalType_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     *终端类型
+     * </pre>
+     *
+     * <code>string terminalType = 10;</code>
+     */
+    public com.google.protobuf.ByteString
+        getTerminalTypeBytes() {
+      Object ref = terminalType_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (String) ref);
+        terminalType_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
     }
 
     public static final int PROTOCOL_FIELD_NUMBER = 11;
@@ -1952,8 +1991,8 @@ public final class BaseMessage {
       if (chatType_ != 0) {
         output.writeInt32(9, chatType_);
       }
-      if (terminalType_ != 0) {
-        output.writeInt32(10, terminalType_);
+      if (!getTerminalTypeBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 10, terminalType_);
       }
       if (!getProtocolBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 11, protocol_);
@@ -2008,9 +2047,8 @@ public final class BaseMessage {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(9, chatType_);
       }
-      if (terminalType_ != 0) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(10, terminalType_);
+      if (!getTerminalTypeBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(10, terminalType_);
       }
       if (!getProtocolBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(11, protocol_);
@@ -2059,8 +2097,8 @@ public final class BaseMessage {
           == other.getMessageCategory());
       result = result && (getChatType()
           == other.getChatType());
-      result = result && (getTerminalType()
-          == other.getTerminalType());
+      result = result && getTerminalType()
+          .equals(other.getTerminalType());
       result = result && getProtocol()
           .equals(other.getProtocol());
       result = result && getToken()
@@ -2103,7 +2141,7 @@ public final class BaseMessage {
       hash = (37 * hash) + CHATTYPE_FIELD_NUMBER;
       hash = (53 * hash) + getChatType();
       hash = (37 * hash) + TERMINALTYPE_FIELD_NUMBER;
-      hash = (53 * hash) + getTerminalType();
+      hash = (53 * hash) + getTerminalType().hashCode();
       hash = (37 * hash) + PROTOCOL_FIELD_NUMBER;
       hash = (53 * hash) + getProtocol().hashCode();
       hash = (37 * hash) + TOKEN_FIELD_NUMBER;
@@ -2265,7 +2303,7 @@ public final class BaseMessage {
 
         chatType_ = 0;
 
-        terminalType_ = 0;
+        terminalType_ = "";
 
         protocol_ = "";
 
@@ -2402,8 +2440,9 @@ public final class BaseMessage {
         if (other.getChatType() != 0) {
           setChatType(other.getChatType());
         }
-        if (other.getTerminalType() != 0) {
-          setTerminalType(other.getTerminalType());
+        if (!other.getTerminalType().isEmpty()) {
+          terminalType_ = other.terminalType_;
+          onChanged();
         }
         if (!other.getProtocol().isEmpty()) {
           protocol_ = other.protocol_;
@@ -2903,26 +2942,59 @@ public final class BaseMessage {
         return this;
       }
 
-      private int terminalType_ ;
+      private Object terminalType_ = "";
       /**
        * <pre>
        *终端类型
        * </pre>
        *
-       * <code>int32 terminalType = 10;</code>
+       * <code>string terminalType = 10;</code>
        */
-      public int getTerminalType() {
-        return terminalType_;
+      public String getTerminalType() {
+        Object ref = terminalType_;
+        if (!(ref instanceof String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          String s = bs.toStringUtf8();
+          terminalType_ = s;
+          return s;
+        } else {
+          return (String) ref;
+        }
       }
       /**
        * <pre>
        *终端类型
        * </pre>
        *
-       * <code>int32 terminalType = 10;</code>
+       * <code>string terminalType = 10;</code>
        */
-      public Builder setTerminalType(int value) {
-        
+      public com.google.protobuf.ByteString
+          getTerminalTypeBytes() {
+        Object ref = terminalType_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (String) ref);
+          terminalType_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       *终端类型
+       * </pre>
+       *
+       * <code>string terminalType = 10;</code>
+       */
+      public Builder setTerminalType(
+          String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
         terminalType_ = value;
         onChanged();
         return this;
@@ -2932,11 +3004,29 @@ public final class BaseMessage {
        *终端类型
        * </pre>
        *
-       * <code>int32 terminalType = 10;</code>
+       * <code>string terminalType = 10;</code>
        */
       public Builder clearTerminalType() {
         
-        terminalType_ = 0;
+        terminalType_ = getDefaultInstance().getTerminalType();
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       *终端类型
+       * </pre>
+       *
+       * <code>string terminalType = 10;</code>
+       */
+      public Builder setTerminalTypeBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        terminalType_ = value;
         onChanged();
         return this;
       }
@@ -3385,7 +3475,7 @@ public final class BaseMessage {
       "\t\022\017\n\007content\030\005 \001(\t\022\020\n\010sendTime\030\006 \001(\003\022\023\n\013" +
       "messageType\030\007 \001(\005\022\027\n\017messageCategory\030\010 \001" +
       "(\005\022\020\n\010chatType\030\t \001(\005\022\024\n\014terminalType\030\n \001" +
-      "(\005\022\020\n\010protocol\030\013 \001(\t\022\r\n\005token\030\014 \001(\t\022\014\n\004d" +
+      "(\t\022\020\n\010protocol\030\013 \001(\t\022\r\n\005token\030\014 \001(\t\022\014\n\004d" +
       "ata\030\r \001(\t\022:\n\013messageFile\030\016 \001(\0132%.com.asm" +
       ".zim.common.proto.MessageFileb\006proto3"
     };

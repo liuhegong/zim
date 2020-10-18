@@ -1,7 +1,7 @@
 package com.asm.zim.server.service.impl;
 
-import com.asm.zim.common.constants.MessageCode;
 import com.asm.zim.common.constants.Result;
+import com.asm.zim.common.entry.TokenAuth;
 import com.asm.zim.server.config.yaml.ImConfig;
 import com.asm.zim.server.core.chat.SystemChatService;
 import com.asm.zim.server.entry.Account;
@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author : azhao
@@ -31,19 +32,22 @@ public class LoginServiceImpl implements LoginService {
 	private SystemChatService systemChatService;
 	@Autowired
 	private ImConfig imConfig;
+	
 	@Override
-	public Result<Map<String, String>> login(String username, String pwd) {
+	public Result<Map<String, String>> login(String username, String pwd, String terminalType) {
 		Account account = accountService.getAccount(username, pwd);
 		if (account == null) {
 			return new Result<Map<String, String>>().failure();
 		}
-		String token = tokenService.getToken(account.getId());
-		if (token != null) {
-			//如果已经登录先退出 但不通知下线
-			tokenService.removeToken(token);
-			systemChatService.loginOut(token, MessageCode.ConflictLoginOut);
+		Set<TokenAuth> tokenAuths = tokenService.getTokenAuthByPersonId(account.getId());
+		for (TokenAuth tokenAuth : tokenAuths) {
+			if (tokenAuth.getTerminalType().equals(terminalType)) {
+				//如果已经登录先退出 但不通知下线
+				tokenService.removeToken(tokenAuth.getToken());
+				//systemChatService.loginOut(tokenAuth.getToken(), MessageCode.ConflictLoginOut);
+			}
 		}
-		token = tokenService.createToken(account.getId());
+		String token = tokenService.createToken(account.getId(), terminalType);
 		tokenService.setCookie(token);
 		Result<Map<String, String>> result = new Result<>();
 		Map<String, String> resultMap = new HashMap<>();

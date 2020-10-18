@@ -1,10 +1,10 @@
 package com.asm.zim.server.service.impl;
 
 import cn.hutool.core.util.IdUtil;
+import com.asm.zim.common.constants.TerminalType;
 import com.asm.zim.common.entry.TokenAuth;
 import com.asm.zim.server.common.constants.Constants;
 import com.asm.zim.server.config.yaml.ImConfig;
-import com.asm.zim.server.config.yaml.WebsocketConfig;
 import com.asm.zim.server.service.TokenService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +19,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -32,8 +34,6 @@ public class TokenServiceImpl implements TokenService {
 	private RedisTemplate<String, Serializable> redisTemplate;
 	@Autowired
 	private ImConfig imConfig;
-	@Autowired
-	private WebsocketConfig websocketConfig;
 	
 	@Override
 	public void setCookie(String token) {
@@ -62,7 +62,7 @@ public class TokenServiceImpl implements TokenService {
 	}
 	
 	@Override
-	public String createToken(String personId) {
+	public String createToken(String personId, String terminalType) {
 		String token = IdUtil.fastSimpleUUID();
 		if (StringUtils.isEmpty(personId)) {
 			return null;
@@ -71,10 +71,11 @@ public class TokenServiceImpl implements TokenService {
 		tokenAuth.setIp(Constants.LOCALHOST);
 		tokenAuth.setPersonId(personId);
 		tokenAuth.setToken(token);
+		tokenAuth.setTerminalType(terminalType);
 		tokenAuth.setEquipmentId(Constants.EQUIPMENT_ID);
 		tokenAuth.setLastLoginTime(System.currentTimeMillis());
 		redisTemplate.opsForValue().set(token, tokenAuth, imConfig.getSessionExpireTime(), TimeUnit.SECONDS);
-		redisTemplate.opsForValue().set(personId, token, imConfig.getSessionExpireTime(), TimeUnit.SECONDS);
+		redisTemplate.opsForValue().set(getPersonKey(tokenAuth), token, imConfig.getSessionExpireTime(), TimeUnit.SECONDS);
 		logger.info("创建token==>{}", token);
 		return token;
 	}
@@ -99,25 +100,50 @@ public class TokenServiceImpl implements TokenService {
 		return true;
 	}
 	
+	private String getPersonKey(TokenAuth tokenAuth) {
+		return tokenAuth.getTerminalType() + "_" + tokenAuth.getPersonId();
+	}
+	
 	@Override
 	public void removeToken(String token) {
 		if (token == null) {
 			return;
 		}
-		String personId = getPersonId(token);
-		if (personId != null) {
+		TokenAuth tokenAuth = getTokenAuth(token);
+		if (tokenAuth != null) {
 			redisTemplate.expire(token, 0, TimeUnit.MILLISECONDS);
-			redisTemplate.expire(personId, 0, TimeUnit.MILLISECONDS);
+			redisTemplate.expire(getPersonKey(tokenAuth), 0, TimeUnit.MILLISECONDS);
+			logger.info("personId {} token {} 移除token", tokenAuth.getPersonId(), token);
 		}
-		logger.info("personId {} token {} 移除token", personId, token);
+		
 	}
 	
 	@Override
-	public String getToken(String personId) {
+	public Set<String> getToken(String personId) {
+		Set<String> tokens = new HashSet<>();
+		if (personId == null) {
+			return tokens;
+		}
+		TerminalType[] terminalTypes = TerminalType.values();
+		for (TerminalType terminalType : terminalTypes) {
+			String token = (String) redisTemplate.opsForValue().get(terminalType.name() + "_" + personId);
+			if (token != null) {
+				tokens.add(token);
+			}
+		}
+		return tokens;
+	}
+	
+	@Override
+	public String getToken(String personId, TerminalType terminalType) {
 		if (personId == null) {
 			return null;
 		}
-		return (String) redisTemplate.opsForValue().get(personId);
+		TokenAuth tokenAuth = (TokenAuth) redisTemplate.opsForValue().get(terminalType.name() + "_" + personId);
+		if (tokenAuth == null) {
+			return null;
+		}
+		return tokenAuth.getToken();
 	}
 	
 	@Override
@@ -170,11 +196,27 @@ public class TokenServiceImpl implements TokenService {
 	}
 	
 	@Override
-	public TokenAuth getTokenAuthByPersonId(String personId) {
-		String token = getToken(personId);
-		if (token == null) {
+	public Set<TokenAuth> getTokenAuthByPersonId(String personId) {
+		Set<TokenAuth> tokenAuths = new HashSet<>();
+		if (personId == null) {
+			return tokenAuths;
+		}
+		TerminalType[] terminalTypes = TerminalType.values();
+		for (TerminalType terminalType : terminalTypes) {
+			TokenAuth tokenAuth = getTokenAuthByPersonId(personId, terminalType);
+			if (tokenAuth != null) {
+				tokenAuths.add(tokenAuth);
+			}
+		}
+		return tokenAuths;
+	}
+	
+	@Override
+	public TokenAuth getTokenAuthByPersonId(String personId, TerminalType terminalType) {
+		if (personId == null) {
 			return null;
 		}
+		String token = (String) redisTemplate.opsForValue().get(terminalType.name() + "_" + personId);
 		return getTokenAuth(token);
 	}
 	
@@ -219,7 +261,7 @@ public class TokenServiceImpl implements TokenService {
 		tokenAuth.setIp(Constants.LOCALHOST);
 		tokenAuth.setEquipmentId(Constants.EQUIPMENT_ID);
 		redisTemplate.opsForValue().set(token, tokenAuth, imConfig.getSessionExpireTime(), TimeUnit.SECONDS);
-		redisTemplate.opsForValue().set(tokenAuth.getPersonId(), token, imConfig.getSessionExpireTime(), TimeUnit.SECONDS);
+		redisTemplate.opsForValue().set(getPersonKey(tokenAuth), token, imConfig.getSessionExpireTime(), TimeUnit.SECONDS);
 	}
 	
 	@Override

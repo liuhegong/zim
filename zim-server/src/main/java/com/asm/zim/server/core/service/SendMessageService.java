@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
+
 /**
  * @author : azhao
  * @description
@@ -22,12 +24,15 @@ public class SendMessageService {
 	@Autowired
 	private DataProtocolService dataProtocolService;
 	
-	public Channel sendByToId(BaseMessage.Message msg) {
-		Channel channel = localChannelGroup.getChannelByPerson(msg.getToId());
-		return send(channel, msg);
+	public Set<Channel> sendByToId(BaseMessage.Message msg) {
+		Set<Channel> channelSet = localChannelGroup.getChannelByPerson(msg.getToId());
+		for (Channel channel : channelSet) {
+			send(channel, msg);
+		}
+		return channelSet;
 	}
 	
-	public Channel sendByToId(NetMessage netMessage) {
+	public Set<Channel> sendByToId(NetMessage netMessage) {
 		return sendByToId(dataProtocolService.coverNetMessageToProtoMessage(netMessage));
 	}
 	

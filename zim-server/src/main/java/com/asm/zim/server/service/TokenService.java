@@ -1,9 +1,11 @@
 package com.asm.zim.server.service;
 
+import com.asm.zim.common.constants.TerminalType;
 import com.asm.zim.common.entry.TokenAuth;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Set;
 
 /**
  * @author : azhao
@@ -26,9 +28,10 @@ public interface TokenService {
 	 * 创建token 包括 tokenAuth
 	 *
 	 * @param personId
+	 * @param terminalType 终端类型，android,web,ios
 	 * @return 返回token
 	 */
-	String createToken(String personId);
+	String createToken(String personId, String terminalType);
 	
 	/**
 	 * 返回personId
@@ -41,13 +44,6 @@ public interface TokenService {
 	
 	void removeToken(String token);
 	
-	/**
-	 * 通过personId 获取token
-	 *
-	 * @param personId
-	 * @return
-	 */
-	String getToken(String personId);
 	
 	/**
 	 * 通过request 获取token
@@ -74,7 +70,28 @@ public interface TokenService {
 	
 	TokenAuth getTokenAuth(String token);
 	
-	TokenAuth getTokenAuthByPersonId(String personId);
+	/**
+	 * 通过personId 获取token
+	 *
+	 * @param personId
+	 * @return 如果不存在token 则返回空set
+	 */
+	Set<String> getToken(String personId);
+	
+	String getToken(String personId, TerminalType terminalType);
+	
+	/**
+	 * @param personId
+	 * @return 没有则返回空 set
+	 */
+	Set<TokenAuth> getTokenAuthByPersonId(String personId);
+	
+	/**
+	 * @param personId
+	 * @param terminalType 客户端类型
+	 * @return
+	 */
+	TokenAuth getTokenAuthByPersonId(String personId, TerminalType terminalType);
 	
 	/**
 	 * 通过 request 获取TokenAuth

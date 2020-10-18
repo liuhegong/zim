@@ -19,7 +19,7 @@ message Message {
     int32 messageType = 7; //1：系统消息  2：普通消息
     int32 messageCategory = 8;//消息类别 1 普通文本 2 文件
     int32 chatType = 9; //聊天类型 1.群聊 2.私聊 3.消息推送
-    int32 terminalType = 10; //终端类型
+    string terminalType = 10; //终端类型
     string protocol = 11;//协议
     string token =12;
     string data=13;//其他属性

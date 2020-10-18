@@ -3,7 +3,6 @@ package com.asm.zim.server.controller;
 import com.asm.zim.common.constants.MessageCode;
 import com.asm.zim.common.constants.Result;
 import com.asm.zim.common.constants.ResultCode;
-import com.asm.zim.server.core.chat.SystemChatService;
 import com.asm.zim.server.entry.Account;
 import com.asm.zim.server.service.AccountService;
 import com.asm.zim.server.service.LoginService;
@@ -11,12 +10,10 @@ import com.asm.zim.server.service.TokenService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.Serializable;
 import java.util.Map;
 
 /**
@@ -28,18 +25,15 @@ public class LoginController {
 	@Autowired
 	private AccountService accountService;
 	@Autowired
-	private SystemChatService systemChatService;
-	@Autowired
 	private TokenService tokenService;
-	@Autowired
-	private RedisTemplate<String, Serializable> redisTemplate;
 	@Autowired
 	private LoginService loginService;
 	
 	@RequestMapping(value = "login")
 	public Result<Map<String, String>> login(@RequestParam(value = "username") String username,
-	                                         @RequestParam(value = "pwd") String pwd) {
-		return loginService.login(username, pwd);
+	                                         @RequestParam(value = "pwd") String pwd,
+	                                         @RequestParam(value = "terminalType") String terminalType) {
+		return loginService.login(username, pwd, terminalType);
 		
 	}
 	

@@ -43,7 +43,7 @@ public class LoginService {
 			builder.setProtocol(NetProtocol.TCP);
 			builder.setToken(token);
 			builder.setFromId(personId);
-			builder.setTerminalType(TerminalType.Android.getValue());
+			builder.setTerminalType(TerminalType.Android.name());
 			builder.setMessageType(MessageType.Ordinary);
 			builder.setChatType(ChatType.privateChat);
 			builder.setMessageCategory(MessageCategory.Text);
@@ -60,7 +60,7 @@ public class LoginService {
 		builder.setProtocol(NetProtocol.TCP);
 		builder.setToken(Common.token);
 		builder.setFromId(personId);
-		builder.setTerminalType(TerminalType.Android.getValue());
+		builder.setTerminalType(TerminalType.Android.name());
 		builder.setMessageType(MessageType.System);
 		builder.setCode(MessageCode.LoginRequest);
 		channel.writeAndFlush(builder.build());
@@ -70,6 +70,7 @@ public class LoginService {
 		Map<String, Object> map = new HashMap<>();
 		map.put("username", username);
 		map.put("pwd", pwd);
+		map.put("terminalType", TerminalType.Android.name());
 		String resultJson = HttpUtil.post(baseUrl + "/login", map);
 		Result result = JSONObject.parseObject(resultJson, Result.class);
 		if (result.getCode() == ResultCode.Success.getCode()) {
@@ -81,5 +82,5 @@ public class LoginService {
 		}
 		return false;
 	}
-
+	
 }

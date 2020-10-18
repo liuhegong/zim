@@ -77,7 +77,7 @@ public class TcpClient {
 						builder.setToken(Common.token);
 						builder.setFromId(personId);
 						builder.setToId("514cc43ba09a473e9bd1ea31ebedc004");//zhangsan
-						builder.setTerminalType(TerminalType.Android.getValue());
+						builder.setTerminalType(TerminalType.Android.name());
 						builder.setMessageType(MessageType.Ordinary);
 						channel.writeAndFlush(builder.build());
 					}

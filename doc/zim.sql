@@ -122,7 +122,7 @@ CREATE TABLE `message`  (
   `send_time` bigint(255) NULL DEFAULT NULL,
   `message_type` int(255) NULL DEFAULT NULL,
   `chat_type` int(255) NULL DEFAULT NULL,
-  `terminal_type` int(255) NULL DEFAULT NULL,
+  `terminal_type` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   `order_number` bigint(20) NULL DEFAULT NULL,
   `protocol` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL,
   `read_state` int(255) NULL DEFAULT NULL,

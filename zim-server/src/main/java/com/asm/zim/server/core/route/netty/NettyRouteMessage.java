@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.util.Set;
 
 /**
  * @author : azhao
@@ -52,19 +53,17 @@ public class NettyRouteMessage implements RouteMessage {
 			changeMessageService.handleRead(message);
 			return;
 		}
-		logger.info("非本机处理消息转发 {}",tokenAuth.getIp());
+		logger.info("非本机处理消息转发 {}", tokenAuth.getIp());
 		Channel channel = routeClient.getChannel(tokenAuth.getIp());
 		channel.writeAndFlush(message);
 	}
 	
 	@Override
 	public void sendMessageByPersonId(BaseMessage.Message message) {
-		TokenAuth tokenAuth = tokenService.getTokenAuthByPersonId(message.getToId());
-		if (tokenAuth == null) {
-			logger.info("tokeAuth为空,toId 为 {}",message.getToId());
-			return;
+		Set<TokenAuth> tokenAuths = tokenService.getTokenAuthByPersonId(message.getToId());
+		for (TokenAuth tokenAuth : tokenAuths) {
+			sendMessage(tokenAuth, message);
 		}
-		sendMessage(tokenAuth, message);
 	}
 	
 }

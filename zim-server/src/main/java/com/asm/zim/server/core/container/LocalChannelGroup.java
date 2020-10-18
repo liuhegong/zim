@@ -7,9 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -107,11 +105,11 @@ public class LocalChannelGroup {
 		logger.info("token {} ", token);
 	}
 	
-	public Channel getChannelByPerson(String personId) {
+	public Set<Channel> getChannelByPerson(String personId) {
 		if (personId == null) {
 			return null;
 		}
-		String token = tokenService.getToken(personId);
+		Set<String> token = tokenService.getToken(personId);
 		logger.info("personId {} token {} ", personId, token);
 		return getChannelByToken(token);
 	}
@@ -122,5 +120,19 @@ public class LocalChannelGroup {
 		}
 		logger.info("token {} ", token);
 		return channelMap.get(token);
+	}
+	
+	public Set<Channel> getChannelByToken(Set<String> tokens) {
+		if (tokens == null) {
+			return null;
+		}
+		logger.info("tokens {} ", tokens);
+		Set<Channel> channelSet = new HashSet<>();
+		for (String token : tokens) {
+			if (channelMap.containsKey(token)) {
+				channelSet.add(channelMap.get(token));
+			}
+		}
+		return channelSet;
 	}
 }
