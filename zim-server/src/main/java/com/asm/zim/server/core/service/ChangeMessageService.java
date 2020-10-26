@@ -4,8 +4,7 @@ import com.asm.zim.common.constants.ChatType;
 import com.asm.zim.common.constants.MessageCode;
 import com.asm.zim.common.constants.MessageType;
 import com.asm.zim.common.proto.BaseMessage;
-import com.asm.zim.server.core.chat.GroupChatService;
-import com.asm.zim.server.core.chat.PrivateChatService;
+import com.asm.zim.server.core.chat.ChatService;
 import com.asm.zim.server.core.chat.SystemChatService;
 import com.asm.zim.server.core.container.LocalChannelGroup;
 import io.netty.channel.Channel;
@@ -30,10 +29,10 @@ public class ChangeMessageService {
 	private LocalChannelGroup socketChannelGroup;
 	
 	@Resource(name = "privateChatService")
-	private PrivateChatService privateChatService;
+	private ChatService privateChatService;
 	
 	@Resource(name = "groupChatService")
-	private GroupChatService groupChatService;
+	private ChatService groupChatService;
 	
 	@Autowired
 	private SystemChatService systemChatService;
