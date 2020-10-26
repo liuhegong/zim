@@ -1,6 +1,6 @@
 package com.asm.zim.server.queue;
 
-import com.asm.zim.server.config.RabbitConfig;
+import com.asm.zim.server.config.queue.RabbitConfig;
 import com.asm.zim.server.entry.Message;
 import com.asm.zim.server.service.MessageService;
 import com.rabbitmq.client.Channel;
@@ -22,6 +22,12 @@ public class MessageListener {
 	@Autowired
 	private MessageService messageService;
 	
+	/*
+	bindings = @QueueBinding(
+			value = @Queue(name = RabbitConfig.SEND_MESSAGE_QUEUE, durable = "true"),
+			exchange = @Exchange(name =RabbitConfig.MESSAGE_EXCHANGE
+			)),
+	 */
 	@RabbitListener(queues = RabbitConfig.SEND_MESSAGE_QUEUE)
 	public void saveSend(Message message, org.springframework.amqp.core.Message mqMessage, Channel channel) {
 		final long deliveryTag = mqMessage.getMessageProperties().getDeliveryTag();

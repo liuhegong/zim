@@ -3,10 +3,9 @@ package com.asm.zim.server.core.chat;
 import cn.hutool.core.util.IdUtil;
 import com.asm.zim.common.constants.MessageType;
 import com.asm.zim.common.proto.BaseMessage;
-import com.asm.zim.server.config.RabbitConfig;
+import com.asm.zim.server.config.queue.RabbitConfig;
 import com.asm.zim.server.core.service.DataProtocolService;
 import com.asm.zim.server.core.service.SendMessageService;
-import com.asm.zim.server.dao.MessageFileDao;
 import com.asm.zim.server.entry.Message;
 import com.asm.zim.server.service.MessageService;
 import org.slf4j.Logger;
@@ -26,8 +25,6 @@ public class PrivateChatService extends ChatService {
 	
 	@Autowired
 	private MessageService messageService;
-	@Autowired
-	private MessageFileDao messageFileDao;
 	@Autowired
 	private DataProtocolService dataProtocolService;
 	@Autowired
@@ -53,7 +50,7 @@ public class PrivateChatService extends ChatService {
 		Message message = dataProtocolService.coverProtoMessageToEntry(msg);
 		if (rabbitTemplate != null) {
 			logger.info("mq发送消息保存");
-			rabbitTemplate.convertAndSend(RabbitConfig.SEND_MESSAGE_QUEUE, message);
+			rabbitTemplate.convertAndSend(RabbitConfig.MESSAGE_EXCHANGE,RabbitConfig.SEND_MESSAGE_QUEUE, message);
 		} else {
 			messageService.saveSend(message);
 		}
@@ -74,7 +71,7 @@ public class PrivateChatService extends ChatService {
 		message.setPersonId(msg.getToId());
 		if (rabbitTemplate != null) {
 			logger.info("mq接收消息保存");
-			rabbitTemplate.convertAndSend(RabbitConfig.RECEIVE_MESSAGE_QUEUE, message);
+			rabbitTemplate.convertAndSend(RabbitConfig.MESSAGE_EXCHANGE,RabbitConfig.RECEIVE_MESSAGE_QUEUE, message);
 		} else {
 			messageService.saveReceive(message);
 		}
