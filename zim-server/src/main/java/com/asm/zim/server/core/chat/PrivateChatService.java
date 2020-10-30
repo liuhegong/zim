@@ -1,6 +1,7 @@
 package com.asm.zim.server.core.chat;
 
 import cn.hutool.core.util.IdUtil;
+import com.asm.zim.common.constants.MessageReadState;
 import com.asm.zim.common.constants.MessageType;
 import com.asm.zim.common.proto.BaseMessage;
 import com.asm.zim.server.config.queue.RabbitConfig;
@@ -42,12 +43,14 @@ public class PrivateChatService extends ChatService {
 	private void saveSendAndResponse(BaseMessage.Message msg) {
 		BaseMessage.Message.Builder sendBuilder = msg.toBuilder();
 		String id = IdUtil.fastSimpleUUID();
-		sendBuilder.setContent(id);//将真实的id返回给客户端
+		//将真实的id返回给客户端
+		sendBuilder.setContent(id);
 		systemChatService.systemConfirmMessage(sendBuilder.build());
-		//发送的是文件
-		sendBuilder.setContent(msg.getContent());
-		sendBuilder.setId(id);
 		Message message = dataProtocolService.coverProtoMessageToEntry(msg);
+		message.setId(id);
+		message.setContent(msg.getContent());
+		message.setPersonId(message.getFromId());
+		message.setReadState(MessageReadState.HAS_READ);
 		if (rabbitTemplate != null) {
 			logger.info("mq发送消息保存");
 			rabbitTemplate.convertAndSend(RabbitConfig.MESSAGE_EXCHANGE,RabbitConfig.SEND_MESSAGE_QUEUE, message);
@@ -62,20 +65,24 @@ public class PrivateChatService extends ChatService {
 	 * @param msg
 	 */
 	private void saveReceiveAndReceive(BaseMessage.Message msg) {
+		//发给对方
 		BaseMessage.Message.Builder receiveBuilder = msg.toBuilder();
-		receiveBuilder.setId(IdUtil.fastSimpleUUID());
+		String id = IdUtil.fastSimpleUUID();
+		receiveBuilder.setId(id);
 		receiveBuilder.setMessageType(MessageType.Ordinary);
 		BaseMessage.Message receiveBaseMessage = receiveBuilder.build();
 		sendMessageService.sendByToId(receiveBaseMessage);
-		Message message = dataProtocolService.coverProtoMessageToEntry(receiveBaseMessage);
+		//保存消息
+		Message message = dataProtocolService.coverProtoMessageToEntry(msg);
 		message.setPersonId(msg.getToId());
+		message.setMessageType(MessageType.Ordinary);
+		message.setReadState(MessageReadState.UN_READ);
 		if (rabbitTemplate != null) {
 			logger.info("mq接收消息保存");
 			rabbitTemplate.convertAndSend(RabbitConfig.MESSAGE_EXCHANGE,RabbitConfig.RECEIVE_MESSAGE_QUEUE, message);
 		} else {
 			messageService.saveReceive(message);
 		}
-		
 	}
 	
 	@Override

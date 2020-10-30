@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +42,7 @@ public class MessageServiceImpl implements MessageService {
 	private MessageFileDao messageFileDao;
 	@Autowired
 	private FileManageService fileManageService;
+	
 	@Override
 	public void addMessage(Message message) {
 		if (message.getId() == null) {
@@ -118,22 +120,21 @@ public class MessageServiceImpl implements MessageService {
 		}
 	}
 	
+	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public void saveSend(Message message) {
 		if (message.getMessageCategory() == MessageCategory.File) {
 			messageFileDao.insert(message.getMessageFile());
 		}
-		logger.info("开始保存消息");
-		message.setPersonId(message.getFromId());
-		message.setReadState(MessageReadState.HAS_READ);
 		addMessage(message);
 	}
 	
+	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public void saveReceive(Message message) {
 		//接收的是文件
 		if (message.getMessageCategory() == MessageCategory.File) {
-			//接收文件复制 不共用
+			//接收文件复制不共用
 			MessageFile messageFile = message.getMessageFile();
 			FileResponse fileResponse = fileManageService.copy(messageFile.getId());
 			if (fileResponse != null) {
@@ -143,8 +144,6 @@ public class MessageServiceImpl implements MessageService {
 				messageFileDao.insert(messageFile);
 			}
 		}
-		logger.info("开始保存消息");
-		message.setReadState(MessageReadState.UN_READ);
 		addMessage(message);
 	}
 	
