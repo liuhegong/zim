@@ -51,7 +51,7 @@ public class SpringContextHolder implements ApplicationContextAware {
 	}
 	
 	/**
-	 * 通过name,以及Clazz返回指定的Bean
+	 * 通过name,以及Clazz返回指定的Bean111
 	 *
 	 * @param name
 	 * @param clazz
