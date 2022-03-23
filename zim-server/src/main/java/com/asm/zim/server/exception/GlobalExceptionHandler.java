@@ -31,6 +31,7 @@ public class GlobalExceptionHandler {
 	public Result<String> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
 		logger.error("400 参数解析异常", e);
 		e.printStackTrace();
+
 		return new Result<String>().failure(ResultCode.Argument_Error);
 	}
 	
